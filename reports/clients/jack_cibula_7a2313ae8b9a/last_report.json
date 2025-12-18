@@ -1,0 +1,98 @@
+{
+  "dailySteps": 3000,
+  "tokens": {
+    "REPORT_TITLE": "Goal Tracker",
+    "REPORT_SUBTITLE": "",
+    "CLIENT_LABEL": "Jack Cibula",
+    "REPORT_DATE": "12.18.25",
+    "DAILY_STEPS": "3000",
+    "HEADER_CHIP_1": "GAIN",
+    "HEADER_CHIP_2": "",
+    "HEADER_CHIP_3": "XT",
+    "MACROS_TITLE": "Protein/Carb/Fat",
+    "PROTEIN_LABEL": "Protein",
+    "PROTEIN_PCT": "29%",
+    "CARB_LABEL": "Carbs",
+    "CARB_PCT": "44%",
+    "FAT_LABEL": "Fat",
+    "FAT_PCT": "27%",
+    "MACROS_FOOTNOTE": "Auto-calculated from daily macro targets.",
+    "BARS_TITLE": "Composition changes",
+    "TABLE_TITLE": "Dietary Changes",
+    "TABLE_COL_1": "Macro",
+    "TABLE_COL_2": "Old",
+    "TABLE_COL_3": "New",
+    "ROW_1_LABEL": "Protein",
+    "ROW_1_MID": "150 g",
+    "ROW_1_VALUE": "158 g",
+    "ROW_2_LABEL": "Carbs",
+    "ROW_2_MID": "222 g",
+    "ROW_2_VALUE": "236 g",
+    "ROW_3_LABEL": "Fats",
+    "ROW_3_MID": "59 g",
+    "ROW_3_VALUE": "63 g",
+    "LINE_TITLE": "Goal Timeline",
+    "AXIS_TOP": "Weight (lb)",
+    "AXIS_BOTTOM": "Start",
+    "AXIS_RIGHT": "Goal"
+  },
+  "macros": [
+    {
+      "key": "Protein",
+      "value": 29,
+      "color": "var(--orange)"
+    },
+    {
+      "key": "Carbs",
+      "value": 44,
+      "color": "var(--teal)"
+    },
+    {
+      "key": "Fat",
+      "value": 27,
+      "color": "var(--teal2)"
+    }
+  ],
+  "bars": {
+    "labels": [
+      "Weight",
+      "Bodyfat %",
+      "TDEE",
+      "Daily Calorie Goal",
+      "Pull-Ups",
+      "Push-Ups"
+    ],
+    "prev": [
+      150.0,
+      8.0,
+      2398,
+      2023,
+      10,
+      30
+    ],
+    "curr": [
+      158.0,
+      10.0,
+      2518,
+      2143,
+      15,
+      50
+    ]
+  },
+  "goalTimeline": {
+    "startWeight": 158.0,
+    "goalWeight": 160.0,
+    "estWeeksMin": 10,
+    "estWeeksMax": 12,
+    "rateLbPerWeek": 0.9,
+    "variationPct": 0.2,
+    "yTicks": [
+      190,
+      187,
+      184,
+      181,
+      178,
+      172
+    ]
+  }
+}

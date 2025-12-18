@@ -1,0 +1,98 @@
+{
+  "dailySteps": 5000,
+  "tokens": {
+    "REPORT_TITLE": "Goal Tracker",
+    "REPORT_SUBTITLE": "",
+    "CLIENT_LABEL": "Dean Katz",
+    "REPORT_DATE": "12.17.25",
+    "DAILY_STEPS": "5000",
+    "HEADER_CHIP_1": "GAIN",
+    "HEADER_CHIP_2": "",
+    "HEADER_CHIP_3": "XT",
+    "MACROS_TITLE": "Protein/Carb/Fat",
+    "PROTEIN_LABEL": "Protein",
+    "PROTEIN_PCT": "27%",
+    "CARB_LABEL": "Carbs",
+    "CARB_PCT": "45%",
+    "FAT_LABEL": "Fat",
+    "FAT_PCT": "28%",
+    "MACROS_FOOTNOTE": "Auto-calculated from daily macro targets.",
+    "BARS_TITLE": "Composition changes",
+    "TABLE_TITLE": "Dietary Changes",
+    "TABLE_COL_1": "Macro",
+    "TABLE_COL_2": "Old",
+    "TABLE_COL_3": "New",
+    "ROW_1_LABEL": "Protein",
+    "ROW_1_MID": "165 g",
+    "ROW_1_VALUE": "168 g",
+    "ROW_2_LABEL": "Carbs",
+    "ROW_2_MID": "280 g",
+    "ROW_2_VALUE": "277 g",
+    "ROW_3_LABEL": "Fats",
+    "ROW_3_MID": "75 g",
+    "ROW_3_VALUE": "74 g",
+    "LINE_TITLE": "Goal Timeline",
+    "AXIS_TOP": "Weight (lb)",
+    "AXIS_BOTTOM": "Start",
+    "AXIS_RIGHT": "Goal"
+  },
+  "macros": [
+    {
+      "key": "Protein",
+      "value": 27,
+      "color": "var(--orange)"
+    },
+    {
+      "key": "Carbs",
+      "value": 45,
+      "color": "var(--teal)"
+    },
+    {
+      "key": "Fat",
+      "value": 28,
+      "color": "var(--teal2)"
+    }
+  ],
+  "bars": {
+    "labels": [
+      "Weight",
+      "Bodyfat %",
+      "TDEE",
+      "Daily Calorie Goal",
+      "Pull-Ups",
+      "Push-Ups"
+    ],
+    "prev": [
+      165.0,
+      12.0,
+      2829,
+      2454,
+      15,
+      35
+    ],
+    "curr": [
+      168.0,
+      13.0,
+      2820,
+      2445,
+      20,
+      40
+    ]
+  },
+  "goalTimeline": {
+    "startWeight": 168.0,
+    "goalWeight": 172.0,
+    "estWeeksMin": 10,
+    "estWeeksMax": 12,
+    "rateLbPerWeek": 0.9,
+    "variationPct": 0.2,
+    "yTicks": [
+      190,
+      187,
+      184,
+      181,
+      178,
+      172
+    ]
+  }
+}

@@ -1,0 +1,3731 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>{{REPORT_TITLE}
+
+}</title>
+<style>
+
+/* --- Dietary Changes bars: ensure % widths map cleanly to values --- */
+.barRow { width: 100%; }
+.barRow .bar { max-width: 100%; }
+.hBarsCol { width: 100%; }
+
+
+    :root{
+      --bg0:#121417;
+      --bg1:#171a1f;
+      --card:#1b1f26;
+      --card2:#1a1e25;
+      --line:rgba(255,255,255,.08);
+      --muted:rgba(255,255,255,.55);
+      --text:rgba(255,255,255,.92);
+
+      --teal:#13d1c8;
+      --teal2:#2f8ea3;
+      --orange:#3B82F6;
+      --red:#7C3AED;
+      --blue:#4aa6ff;      --green:#8bc34a;
+
+      /* Macro donut colors */
+      --m1: var(--red);
+      --m2: var(--orange);
+      --m3: #A3E635;
+}
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 900px at 65% 0%, rgba(255,255,255,.06), transparent 55%),
+                  linear-gradient(180deg, var(--bg1), var(--bg0));
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
+      color:var(--text);
+      display:flex;
+      min-height:100vh;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    /* Fixed design size so your PDF render is consistent */
+    .page{
+      width:1620px;
+      height:1620px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+      border-radius:16px;
+      position:relative;
+      overflow:hidden;
+      box-shadow: 0 30px 90px rgba(0,0,0,.55);
+    }
+    .inner{padding:56px 56px 48px 56px; height:100%;}
+    .header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:32px;
+    }
+    .title h1{
+      margin:0;
+      font-size:64px;
+      letter-spacing:.2px;
+      font-weight:800;
+      line-height:1.05;
+    }
+    .subtitle{
+      margin-top:14px;
+      color:var(--muted);
+      font-size:22px;
+      line-height:1.35;
+      max-width:980px;
+    }
+    .meta{
+      text-align:right;
+      min-width:360px;
+    }
+    .meta .client{
+      font-size:20px;
+      color:rgba(255,120,150,.9);
+      letter-spacing:.6px;
+    }
+    .meta .date{
+      margin-top:6px;
+      font-size:26px;
+      font-weight:700;
+      color:rgba(255,255,255,.88);
+    }
+    .meta .chips{
+      margin-top:18px;
+      display:flex;
+      gap:18px;
+      justify-content:flex-end;
+      color:rgba(100,200,255,.8);
+      font-weight:600;
+      letter-spacing:.5px;
+    }
+    .rule{
+      margin-top:28px;
+      height:2px;
+      background: linear-gradient(90deg, rgba(60,190,255,.55), rgba(60,190,255,.15), transparent 90%);
+    }
+
+    .grid{
+      margin-top:34px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap:0;
+      height: calc(100% - 64px - 34px - 90px); /* header-ish space */
+      border-top:1px solid var(--line);
+      border-left:1px solid var(--line);
+    }
+    .card{
+      border-right:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      padding:36px 36px 28px 36px;
+      background: radial-gradient(900px 650px at 30% 0%, rgba(255,255,255,.03), transparent 55%);
+    }
+    .card h2{
+      margin:0;
+      font-size:28px;
+      letter-spacing:.2px;
+      font-weight:750;
+      color:rgba(255,255,255,.88);
+    }
+    .card .subcap{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:18px;
+    }
+
+    /* Top-left: donut */
+
+    /* === Macros donut (IDENTICAL behavior to basePie_maxHoverSurface_foodExamples.html) === */
+    #card-macros .macroDonutShell{ margin-top:22px; }
+    #card-macros .macroDonutGrid{
+      display:grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap:16px;
+      align-items:stretch;
+    }
+    @media (max-width: 840px){
+      #card-macros .macroDonutGrid{grid-template-columns:1fr}
+    }
+    #card-macros .macroViz{display:grid;place-items:center;padding:8px}
+    #card-macros .donutWrap{
+      width:360px;height:360px;max-width:100%;
+      aspect-ratio:1/1;position:relative;
+      filter: drop-shadow(0 22px 55px rgba(0,0,0,.55));
+    }
+    #card-macros .donutWrap svg{width:100%;height:100%}
+
+    #card-macros .center{
+      position:absolute;inset:0;
+      display:grid;place-items:center;
+      pointer-events:none;text-align:center;
+    }
+    #card-macros .centerBox{
+      width: 52%;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(10,12,16,.55);
+      backdrop-filter: blur(10px);
+      padding:8px 8px;
+    }
+    #card-macros .centerLabel{
+      font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+      color:rgba(255,255,255,.60);font-weight:950;margin-bottom:6px;
+    }
+    #card-macros .centerVal{font-size:24px;font-weight:1000;letter-spacing:.2px;line-height:1.05}
+    #card-macros .centerSub{margin-top:4px;color:rgba(255,255,255,.72);font-size:12px;font-weight:800}
+
+    #card-macros .macroInfo{min-width:0}
+    #card-macros .legend{display:flex;flex-direction:column;gap:10px}
+
+    /* Right-align ONLY the macro label text (Protein / Carbs / Fat) within its own container */
+    /* Left-align ONLY the macro label text (Protein / Carbs / Fat) within its own container */
+    #card-macros .row > div:first-child{
+      text-align:left;
+    }
+    #card-macros .k{
+      justify-content:flex-start;
+      text-align:left;
+    }
+    #card-macros .meta{
+      text-align:left;
+    }
+
+
+    #card-macros .row{
+      /* tightened */
+      display:grid;grid-template-columns: 1fr auto;
+      gap:10px;align-items:center;
+      padding:10px 10px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      background: rgba(255,255,255,.03);
+    }
+
+    /* Ensure '% of total' has a minimum tab-style separation */
+
+    #card-macros .k{display:flex;align-items:center;gap:8px;font-weight:950;letter-spacing:.2px;font-size:13px}
+    #card-macros .sw{width:10px;height:10px;border-radius:6px;box-shadow:0 0 0 5px rgba(255,255,255,.04)}
+    #card-macros .meta{margin-top:2px;font-size:11.5px;color:rgba(255,255,255,.70);font-weight:750}
+    #card-macros .val{text-align:right;font-variant-numeric: tabular-nums;font-weight:1000;letter-spacing:.2px;font-size:13px;line-height:1.05}
+    #card-macros .val small{display:block;font-weight:800;font-size:11px;color:rgba(255,255,255,.64);margin-top:2px}
+
+    
+    /* --- Real-time macro adjust controls (Carbs/Fat) --- */
+    #card-macros .macroCtrl{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-top:6px;
+      width:100%;
+    }
+    #card-macros .macroCtrl .macroStep{
+      width:24px;height:24px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.86);
+      font-weight:950;
+      line-height:22px;
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      padding:0;
+    }
+    #card-macros .macroCtrl .macroStep:active{ transform: translateY(1px); }
+    #card-macros .macroCtrl input[type="range"]{
+      flex:1 1 auto;
+      min-width:90px;
+      accent-color: rgba(120,220,140,.95);
+    }
+    #card-macros .macroCtrl input[type="number"]{
+      width:72px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(10,12,16,.45);
+      color: rgba(255,255,255,.90);
+      padding:6px 8px;
+      font-weight:900;
+      font-variant-numeric: tabular-nums;
+      outline:none;
+    }
+    #card-macros .macroCtrl .unit{
+      font-size:11px;
+      color: rgba(255,255,255,.55);
+      font-weight:850;
+      margin-left:-4px;
+    }
+
+/* Tooltip */
+    #card-macros .tip{
+      position:absolute;z-index:6;pointer-events:none;
+      transform: translate(-50%, -112%);
+      padding:10px 10px;border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(10,12,16,.86);
+      backdrop-filter: blur(10px);
+      box-shadow:0 18px 50px rgba(0,0,0,.55);
+      min-width: 178px;
+      opacity:0;
+      transition: opacity .12s ease;
+    }
+    #card-macros .tip.show{opacity:1}
+    #card-macros .tip .tTitle{display:flex;align-items:center;gap:8px;font-weight:950;letter-spacing:.2px;font-size:13px;margin-bottom:6px}
+    #card-macros .tip .tDot{width:10px;height:10px;border-radius:999px;box-shadow:0 0 0 6px rgba(255,255,255,.05)}
+    #card-macros .tip .tLine{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:rgba(255,255,255,.80);font-weight:750}
+    #card-macros .tip .tLine b{color:rgba(255,255,255,.94);font-weight:950}
+
+    /* Donut draw animation (disabled during export) */
+    @keyframes draw { from { stroke-dashoffset: var(--dash); } to { stroke-dashoffset: 0; } }
+    #card-macros .slice{
+      stroke-dasharray: var(--dash);
+      stroke-dashoffset: var(--dash);
+      animation: draw 900ms cubic-bezier(.2,.9,.2,1) forwards;
+      animation-delay: var(--delay, 0ms);
+    }
+
+    /* Hover behavior: translate outward + expand thickness */
+    #card-macros .sliceHover{
+      cursor:pointer;
+      transform-box: fill-box;
+      transform-origin: center;
+      transition:
+        transform .25s ease,
+        filter .25s ease,
+        stroke-width .18s cubic-bezier(.2,.9,.2,1);
+      filter: drop-shadow(0 10px 22px rgba(0,0,0,.22));
+    }
+    #card-macros .sliceHover:hover{
+      transform: translate(var(--dx), var(--dy)) scale(1.04);
+      stroke-width: 32px;
+      filter:
+        drop-shadow(0 16px 34px rgba(0,0,0,.34))
+        drop-shadow(0 0 16px rgba(255,255,255,.10));
+    }
+
+    /* Food examples chips */
+    #card-macros .tipListRow{ display:flex; flex-wrap:wrap; gap:6px; max-width: 260px; }
+    #card-macros .tipChip{
+      font-size:11px;
+      padding:5px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.82);
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      #card-macros .slice{animation:none!important;stroke-dashoffset:0!important}
+      #card-macros .sliceHover{transition:none!important}
+    }
+
+    .macroPieStage{
+      position:relative;
+      width:420px;
+      height:420px;
+      display:grid;
+      place-items:center;
+      border-radius:18px;
+      background: radial-gradient(520px 360px at 50% 40%, rgba(255,255,255,.05), transparent 62%),
+                  linear-gradient(180deg, rgba(0,0,0,.26), rgba(0,0,0,.10));
+      border:1px solid rgba(255,255,255,.10);
+      overflow:hidden;
+    }
+    .macroPieStage:before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(520px 360px at 18% 0%, rgba(19,209,200,.10), transparent 60%),
+        radial-gradient(520px 360px at 82% 0%, rgba(255,138,0,.10), transparent 60%),
+        radial-gradient(520px 360px at 50% 115%, rgba(74,166,255,.08), transparent 60%);
+      opacity:.95;
+      pointer-events:none;
+      mix-blend-mode: screen;
+      filter: blur(.2px);
+    }
+    .macroPie{
+      width:380px;
+      height:380px;
+      display:block;
+      overflow:visible;
+      filter: drop-shadow(0 18px 26px rgba(0,0,0,.55));
+    }
+    .macroSlice{
+      cursor:pointer;
+      transform-box: fill-box;
+      transform-origin: center;
+      transition: transform 320ms cubic-bezier(.16,.9,.2,1), filter 320ms ease, opacity 200ms ease;
+      opacity:.96;
+    }
+    .macroSlice:hover,
+    .macroSlice:focus-visible{
+      transform: translate(var(--dx), var(--dy)) scale(1.09);
+      filter: drop-shadow(0 24px 32px rgba(0,0,0,.70));
+      opacity:1;
+      outline:none;
+    }
+
+    .macroPieLegend{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      font-size:20px;
+      color:rgba(255,255,255,.85);
+    }
+
+    /* Tooltip */
+    .macroTip{
+      position:absolute;
+      left:0; top:0;
+      pointer-events:none;
+      opacity:0;
+      transform: translate3d(0,0,0);
+      transition: opacity 140ms ease;
+      z-index:5;
+    }
+    .macroTip[aria-hidden="false"]{ opacity:1; }
+    .macroTipInner{
+      transform: translate(-50%, calc(-100% - 14px));
+      padding:12px 12px 10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(10,12,18,.86);
+      -webkit-backdrop-filter: blur(12px);
+              backdrop-filter: blur(12px);
+      box-shadow: 0 18px 45px rgba(0,0,0,.62);
+      max-width: 290px;
+    }
+    .macroTipInner .tTitle{
+      font-size:13px;
+      font-weight:900;
+      color: rgba(255,255,255,.92);
+      margin-bottom:8px;
+      letter-spacing:.2px;
+    }
+    .macroTipInner .tLine{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      font-size:12px;
+      color: rgba(255,255,255,.78);
+      margin-top:6px;
+    }
+    .macroTipInner .tLine span{ color: rgba(255,255,255,.62); }
+    .macroTipInner .tLine b{ font-weight:900; color: rgba(255,255,255,.88); }
+    .macroTipInner .tEx{ margin-top:10px; opacity:.95; }
+    .tList{ margin-top:8px; display:flex; flex-wrap:wrap; gap:6px; }
+    .tChip{
+      font-size:11px;
+      padding:5px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.84);
+      font-weight:850;
+      white-space:nowrap;
+    }
+
+    .donut-wrap{
+      margin-top:26px;
+      display:flex;
+      gap:28px;
+      align-items:center;
+    }
+    .donut{
+      width:420px;height:420px;
+    }
+    .donut-legend{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      font-size:20px;
+      color:rgba(255,255,255,.85);
+    }
+    .legend-row{display:flex;align-items:center;gap:12px;}
+    .dot{width:14px;height:14px;border-radius:999px;display:inline-block;}
+    .legend-row .k{min-width:120px;color:rgba(255,255,255,.8)}
+    .legend-row .v{font-weight:750}
+    .tiny{
+      margin-top:14px;
+      color:rgba(255,255,255,.35);
+      font-size:14px;
+    }
+
+    
+
+    /* Top-right: bars + KPIs */
+
+    /* ===== FIX: keep top-right title from overlapping chart/table on wrap/resize ===== */
+    #card-bars{
+      display:grid;
+      grid-template-rows:auto 1fr;
+      row-gap:14px;
+    }
+    #card-bars .bars-wrap{ margin-top:0 !important; }
+
+    .bars-wrap{margin-top:18px;}
+    .chart{
+      width:100%;
+      height:260px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      position:relative;
+    }
+
+    /* Bar hover tooltip + pop (matches macro slice hover vibe) */
+    #card-bars .barTip{
+      position:absolute;
+      left:0; top:0;
+      pointer-events:none;
+      opacity:0;
+      transform: translate3d(0,0,0);
+      transition: opacity 140ms ease;
+      z-index:6;
+    }
+    #card-bars .barTip.show{ opacity:1; }
+    #card-bars .barTipInner{
+      transform: translate(-50%, calc(-100% - 12px));
+      padding:10px 10px 9px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(10,12,18,.88);
+      -webkit-backdrop-filter: blur(12px);
+              backdrop-filter: blur(12px);
+      box-shadow: 0 18px 45px rgba(0,0,0,.62);
+      min-width: 190px;
+    }
+    #card-bars .barTipTitle{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:13px;
+      font-weight:950;
+      letter-spacing:.2px;
+      color: rgba(255,255,255,.92);
+      margin-bottom:8px;
+    }
+    #card-bars .barTipDot{
+      width:10px;height:10px;border-radius:999px;
+      box-shadow:0 0 0 6px rgba(255,255,255,.05);
+      background:#fff;
+    }
+    #card-bars .barTipLine{
+      display:flex;
+      justify-content:flex-start;
+      gap:6px;
+      font-size:12px;
+      color: rgba(255,255,255,.78);
+      font-weight:750;
+    }
+    
+    #card-bars .barTipLine b{ margin-left:4px; }
+    #card-bars .barTipChange{ margin-top:6px; }
+    #card-bars .barTipArrow{
+      width:14px;
+      display:inline-block;
+      text-align:center;
+      font-weight:950;
+    }
+    #card-bars .barTipChange.good{ color: rgba(120,220,140,.95); }
+    #card-bars .barTipChange.bad{  color: rgba(255,120,120,.95); }
+    #card-bars .barTipChange.neutral{ color: rgba(255,255,255,.62); }
+#card-bars .barTipLine b{
+      font-weight:950;
+      color: rgba(255,255,255,.92);
+    }
+
+    #card-bars .bar{
+      transition: transform 180ms cubic-bezier(.16,.9,.2,1), filter 180ms ease;
+      transform-origin: bottom;
+      will-change: transform, filter;
+    }
+    #card-bars .bar:hover{
+      transform: translateY(-4px) scaleY(1.02);
+      filter: brightness(1.12);
+    }
+
+    .kpis{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:18px;
+      align-items:flex-start;
+    }
+
+
+/* Top-right: comparison table wrapper should not be constrained by KPI grid */
+.kpis-bars{
+  display:block; /* avoid 4-col grid squeezing the comparison table */
+}
+
+.comp-table-scroll{
+  width:100%;
+  overflow-x:hidden; /* no scrollbar */
+}
+.comp-table-scroll::-webkit-scrollbar{display:none;}
+.comp-table-scroll{scrollbar-width:none;}
+
+/* inverted comparison table (Prev/New as rows, metrics as columns) — squeezed */
+.comp-table.inverted{
+  width:100%;
+  table-layout:fixed;
+  font-size:12px;
+}
+.comp-table.inverted th,
+.comp-table.inverted td{
+  padding:4px 6px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  text-align:right;
+  font-variant-numeric: tabular-nums;
+  white-space:nowrap;
+}
+.comp-table.inverted th:first-child,
+.comp-table.inverted td:first-child{
+  text-align:left;
+  color:rgba(255,255,255,.7);
+  font-weight:700;
+  width:56px;
+}
+.comp-table.inverted th{
+  color:rgba(255,255,255,.6);
+  font-weight:600;
+  font-size:11px;
+}
+.comp-table.inverted td.prev{ color: rgba(255,120,120,.95); }
+.comp-table.inverted td.new{ color: rgba(120,220,140,.95); }
+    .kpi{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      color:rgba(255,255,255,.86);
+      font-size:18px;
+    }
+    .kpi .v{
+      font-size:20px;
+      font-weight:800;
+      margin-top:2px;
+    }
+    .kpi .l{color:rgba(255,255,255,.6); margin-top:2px;}
+    .kpi .dot{margin-top:4px;}
+
+    /* Bottom-left: table-ish */
+    .table{
+      margin-top:22px;
+      width:100%;
+      border-collapse:collapse;
+      font-size:22px;
+      color:rgba(255,255,255,.85);
+    }
+    .table th,.table td{
+      padding:18px 10px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      vertical-align:middle;
+    }
+    .table th{
+      text-align:left;
+      color:rgba(255,255,255,.78);
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .table td.r{text-align:right;color:rgba(255,255,255,.9);font-weight:750;}
+    .table td.m{color:rgba(140,220,255,.75)}
+    .badge-row{
+      display:flex;
+      gap:22px;
+      margin-top:18px;
+      font-size:16px;
+      color:rgba(255,255,255,.55);
+    }
+    .badge{
+      display:flex; gap:10px; align-items:center;
+      padding:8px 10px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:999px;
+      background: rgba(255,255,255,.02);
+    }
+    .badge .bar{width:48px;height:2px;background:rgba(255,255,255,.15); position:relative;}
+    .badge .bar::after{content:"";position:absolute;left:0;top:0;height:100%;width:60%;background:rgba(60,190,255,.65);}
+
+    /* Bottom-right: line chart */
+    .line-wrap{margin-top:18px;}
+    .line{
+      width:100%;
+      height:560px;
+      border-left:1px solid rgba(255,255,255,.08);
+      border-bottom:1px solid rgba(255,255,255,.08);
+      position:relative;
+    }
+    .axis-label{
+      position:absolute;
+      color:rgba(255,255,255,.35);
+      font-size:14px;
+      letter-spacing:.2px;
+    }
+
+    
+
+    /* Goal timeline header (legend + mini stats) */
+    .gtTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-top:14px;
+      margin-bottom:10px;
+    }
+    .gtLegend{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      color:rgba(255,255,255,.70);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.02em;
+    }
+    .gtKey{ display:flex; align-items:center; gap:8px; }
+    .gtSwatch{
+      width:14px; height:10px; border-radius:4px;
+      border:1px solid rgba(255,255,255,.14);
+      display:inline-block;
+    }
+    .gtSwatch.gtReal{ background: linear-gradient(90deg, rgba(101,214,205,.95), rgba(242,162,59,.95)); }
+    .gtSwatch.gtOpt{  background: linear-gradient(90deg, rgba(160,120,255,.95), rgba(60,190,255,.95)); }
+    .gtSwatch.gtNow{  background: rgba(255,255,255,.85); box-shadow:0 0 0 5px rgba(255,255,255,.06); }
+
+    .gtStats{
+      display:flex;
+      gap:12px;
+      align-items:stretch;
+    }
+    .gtStat{
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      min-width:140px;
+      text-align:right;
+    }
+    .gtStatLabel{
+      font-size:11px;
+      color:rgba(255,255,255,.60);
+      font-weight:800;
+    }
+    .gtStatVal{
+      margin-top:4px;
+      font-size:14px;
+      font-weight:950;
+      color:rgba(255,255,255,.90);
+      font-variant-numeric: tabular-nums;
+    }
+/* Variable tokens styling (helps you spot them) */
+    [data-var]{
+      outline: 1px dashed rgba(60,190,255,.18);
+      outline-offset: 4px;
+      border-radius:6px;
+    }
+    .token{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-weight:700;
+      color:rgba(210,245,255,.9);
+    }
+  
+.comp-table th{text-align:right;color:rgba(255,255,255,.6);font-weight:600;}
+.comp-table th:first-child,.comp-table td:first-child{text-align:left;}
+.comp-table td{text-align:right;font-weight:600;}
+
+
+/* comparison table under composition bars (two-column compact) */
+.comp-table-wrap{
+  margin-top: 8px;
+  width: min(900px, 100%);
+  justify-self: center;
+  padding: 0 14px;       /* ✅ aligns with bar chart inner area */
+  box-sizing: border-box;
+}
+
+
+.comp-table-head{
+  display:grid;
+  grid-template-columns: 1fr 140px 140px;
+  gap:0;
+  padding:0 0 6px 0;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  margin-bottom:8px;
+}
+.comp-table-head div{
+  font-size:12px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.6);
+  font-weight:600;
+  padding:0 8px;
+}
+.comp-table-head div:nth-child(2),
+.comp-table-head div:nth-child(3){text-align:right;}
+
+.comp-two{
+  display:flex;
+  gap:18px;
+}
+.comp-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+  table-layout:fixed;
+}
+.comp-table td{
+  padding:6px 8px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  font-weight:600;
+  vertical-align:middle;
+}
+.comp-table td.metric{
+  color:rgba(255,255,255,.86);
+  font-weight:600;
+}
+.comp-table td.prev,
+.comp-table td.curr{
+  text-align:right;
+  font-variant-numeric: tabular-nums;
+  width:140px;
+}
+
+
+/* color-coding previous vs current values */
+.comp-table td.prev{
+  color: rgba(255,120,120,.95); /* light red */
+}
+.comp-table td.curr{
+  color: rgba(120,220,140,.95); /* light green */
+}
+
+
+/* trend coloring for % change + arrow */
+.trend-good{color: rgba(120,220,140,.95) !important;}  /* light green */
+.trend-bad{color: rgba(255,120,120,.95) !important;}   /* light red */
+.trend-neutral{color: rgba(255,255,255,.62) !important;}
+
+
+/* === FINAL COLUMN TUNING === */
+.comp-table.inverted{
+  width:100%;
+  table-layout:fixed;
+  font-size:12px;
+  margin-left:6px;              /* subtle right shift */
+}
+
+.comp-table.inverted th,
+.comp-table.inverted td{
+  padding:4px 4px;              /* narrower columns */
+  text-align:right;
+  white-space:nowrap;
+}
+
+.comp-table.inverted th{
+  font-size:11px;
+  text-align:center;            /* headers centered over columns */
+}
+
+.comp-table.inverted th:first-child,
+.comp-table.inverted td:first-child{
+  width:52px;                   /* compact row label column */
+  text-align:left;
+  padding-right:8px;
+}
+
+
+/* === HEADER ALIGNMENT OVERRIDE (align metric headers under bar-pair centers) === */
+.comp-table.inverted thead th:not(:first-child){
+  text-align:right;     /* center header text within its metric column */
+  position:relative;
+  left:0px;              /* shift headers to the right to match bar group centers */
+}
+
+
+/* Bottom-left: Macro Compare chart (Prev vs New grams) */
+.macro-compare{
+  margin-top:22px;
+  padding-top:14px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.macro-compare .mc-legend{
+  display:flex;
+  gap:14px;
+  align-items:center;
+  color:rgba(255,255,255,.62);
+  font-size:12px;
+  margin-bottom:10px;
+}
+.macro-compare .mc-legend .sw{
+  width:14px;height:10px;border-radius:4px;display:inline-block;
+  border:1px solid rgba(255,255,255,.12);
+}
+.macro-compare .mc-row{
+  display:grid;
+  grid-template-columns: 96px 1fr 80px;
+  gap:12px;
+  align-items:center;
+  padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.macro-compare .mc-row:last-child{ border-bottom:none; }
+.macro-compare .mc-name{
+  font-size:16px;
+  font-weight:800;
+  color:rgba(255,255,255,.88);
+}
+.macro-compare .mc-bars{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.macro-compare .mc-barwrap{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.macro-compare .mc-tag{
+  width:34px;
+  font-size:11px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.45);
+  font-weight:800;
+}
+.macro-compare .mc-track{
+  position:relative;
+  height:12px;
+  flex:1;
+  border-radius:999px;
+  background:rgba(255,255,255,.05);
+  overflow:hidden;
+}
+.macro-compare .mc-fill{
+  height:100%;
+  border-radius:999px;
+  width:0%;
+}
+.macro-compare .mc-fill.prev{ opacity:.55; }
+.macro-compare .mc-fill.new{ opacity:.95; }
+.macro-compare .mc-val{
+  text-align:right;
+  font-variant-numeric: tabular-nums;
+  font-size:13px;
+  font-weight:800;
+  color:rgba(255,255,255,.82);
+}
+.macro-compare .mc-delta{
+  text-align:right;
+  font-variant-numeric: tabular-nums;
+  font-size:12px;
+  font-weight:800;
+  color:rgba(255,255,255,.55);
+}
+.macro-compare .mc-delta.good{ color: rgba(120,220,140,.95); }
+.macro-compare .mc-delta.bad{  color: rgba(255,120,120,.95); }
+
+
+    /* TRUE tab-stop alignment for macro rows */
+    #card-macros .row{
+      display:grid;
+      grid-template-columns: minmax(0, 220px) 90px;
+      align-items:center;
+    }
+    #card-macros .val{
+      white-space:nowrap;
+      text-align:left;
+    }
+
+
+    /* === POP enhancements for macro donut (outline + backdrop + hover lift) === */
+    #card-macros .donutWrap{
+      position:relative;
+    }
+    #card-macros .donutWrap::before{
+      content:"";
+      position:absolute;
+      inset:-10px;
+      border-radius:50%;
+      background: radial-gradient(circle, rgba(0,0,0,.28), rgba(0,0,0,.72));
+      z-index:-1;
+      pointer-events:none;
+    }
+    #card-macros .sliceHover{
+      stroke-linejoin: round;
+      stroke-linecap: butt;
+      filter: drop-shadow(0 14px 28px rgba(0,0,0,.45));
+    }
+    #card-macros .sliceHover:hover{
+      filter: brightness(1.08) drop-shadow(0 18px 36px rgba(0,0,0,.55));
+    }
+
+
+
+/* ===== Bottom-right quadrant disclaimer (small + italic, subtle & tight) ===== */
+#card-line{
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+#card-line .line-wrap{
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+#card-line .brq-disclaimer{
+  margin-top: auto;
+  padding-top: 4px;                 /* tighter */
+  border-top: 1px solid rgba(255,255,255,.08); /* subtler */
+  font-size: 10px;                  /* slightly smaller */
+  line-height: 1.3;
+  font-style: italic;
+  color: rgba(255,255,255,.48);     /* more subtle */
+  text-align: right;
+}
+
+
+/* ===== Top-right table alignment: remove row labels, center columns under bars ===== */
+.comp-table.inverted{
+  width: 100%;
+  table-layout: fixed;
+}
+.comp-table.inverted th,
+.comp-table.inverted td{
+  text-align: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+.comp-table.inverted thead th{
+  font-size: 11px;
+  color: rgba(255,255,255,.72);
+  font-weight: 600;
+  font-size: 10.5px;
+  line-height: 1.15;
+}
+.comp-table.inverted td.prev{ color: rgba(255,255,255,.88); }
+.comp-table.inverted td.curr{ color: rgba(19,209,200,.92); }
+
+/* Match the bar-chart horizontal padding so columns sit under bar groups */
+#chart-bars{ padding-left: 14px; padding-right: 14px; }
+.comp-table-wrap{ padding-left: 14px; padding-right: 14px; box-sizing: border-box; }
+
+
+/* ===== TOP-RIGHT: pixel-uniform header/value centering under bars ===== */
+.comp-table.inverted{ --comp-cols: 6; }
+.comp-table.inverted thead th,
+.comp-table.inverted tbody td{
+  width: calc(100% / var(--comp-cols));
+  text-align: center;
+  white-space: normal;
+}
+.comp-table.inverted thead th{
+  vertical-align: bottom;
+  padding-bottom: 6px;
+}
+.comp-table.inverted tbody td{
+  vertical-align: middle;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+
+/* ===== TOP-RIGHT table: prevent header truncation (e.g., Push-Ups) ===== */
+.comp-table.inverted thead th{
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  word-break: normal;
+  hyphens: auto;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+
+/* ===== TOP-RIGHT inverted table: force true column centering (headers + values) ===== */
+.comp-table.inverted th,
+.comp-table.inverted td{
+  text-align: center !important;
+}
+.comp-table.inverted th:first-child,
+.comp-table.inverted td:first-child{
+  text-align: center !important; /* override global first-child left align */
+}
+
+
+/* ===== Top-right data color key ===== */
+.data-color-key{
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  font-size: 10.5px;
+  line-height: 1.2;
+  color: rgba(255,255,255,.65);
+}
+.data-color-key .key-item{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.data-color-key .swatch{
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.data-color-key .prev-swatch{ background: rgba(255,255,255,.9); }
+.data-color-key .curr-swatch{ background: rgba(19,209,200,.95); }
+
+
+/* ===== Bottom-left: embedded Body Composition (compact) ===== */
+.bl-bodycomp{
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+.bl-subtitle{
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.72);
+}
+#chart-bars-bl{
+  height: 190px !important;
+}
+
+
+/* ===== Top-left: Dietary Changes tucked under the donut ===== */
+#card-macros .dietary-inline{
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+#card-macros .dietary-inline h2{
+  margin-top: 0;
+  font-size: 14px;
+}
+#card-macros .dietary-inline .macro-compare{
+  margin-top: 8px;
+}
+#card-macros .dietary-inline .macro-compare .mc-legend{
+  font-size: 10.5px;
+  opacity: .75;
+}
+#card-macros .dietary-inline .macro-compare .mc-row{
+  padding: 6px 0;
+}
+
+
+
+/* ===== Top-right: Recomp summary block (compressed to fit 2 KPI rows) ===== */
+.recomp-summary{
+  margin-top: 12px;
+  padding: 10px 10px 8px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 14px;
+  background:
+    radial-gradient(900px 320px at 20% 0%, rgba(19,209,200,.10), rgba(19,209,200,0) 55%),
+    radial-gradient(900px 320px at 90% 0%, rgba(74,166,255,.10), rgba(74,166,255,0) 60%),
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+  box-shadow: 0 14px 34px rgba(0,0,0,.30);
+}
+.recomp-title{
+  font-size: 19px;
+  margin: 0 0 3px 0;
+  color: rgba(255,255,255,.92);
+  font-weight: 850;
+}
+.recomp-sub{
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.66);
+}
+.recomp-kpis{
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.recomp-kpi{
+  padding: 8px 9px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.18);
+}
+.recomp-kpi .k{
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.60);
+  margin-bottom: 5px;
+}
+.recomp-kpi .v{
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: .3px;
+}
+.recomp-kpi .v.pos{ color: rgba(120,255,180,.95); }
+.recomp-kpi .v.neg{ color: rgba(120,255,180,.95); } /* keep green emphasis like your "new" values */
+@media (max-width: 980px){
+  .recomp-kpis{ grid-template-columns: 1fr; }
+  .recomp-title{ font-size: 18px; }
+}
+
+  .recomp-title{ font-size: 20px; }
+}
+
+/* ===== Header disclaimer (replaces chips visually, keeps layout stable) ===== */
+.meta .chips{ display:none !important; } /* keeps structure intact, just hides L/3/T */
+.header-disclaimer{
+  margin-top: 14px;
+  max-width: 520px;
+  margin-left: auto;
+  font-size: 10px;
+  line-height: 1.35;
+  font-style: italic;
+  color: rgba(255,255,255,.42);
+  text-align: right;
+}
+
+
+/* ===== Emphasize recomp headline ===== */
+.recomp-summary h3,
+.recomp-summary .title,
+.recomp-summary .recomp-title{
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: #ffffff;
+  text-shadow:
+    0 0 6px rgba(32,255,178,0.35),
+    0 0 14px rgba(32,255,178,0.25),
+    0 0 28px rgba(32,255,178,0.15);
+}
+/* =================================== */
+
+
+/* ===== Backlit green success headline ===== */
+.recomp-summary h3,
+.recomp-summary .title,
+.recomp-summary .recomp-title{
+  position: relative;
+  z-index: 1;
+}
+
+.recomp-summary h3::after,
+.recomp-summary .title::after,
+.recomp-summary .recomp-title::after{
+  content: "";
+  position: absolute;
+  left: -14px;
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 120%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0,255,170,0.28) 0%,
+    rgba(0,255,170,0.18) 35%,
+    rgba(0,255,170,0.08) 60%,
+    rgba(0,255,170,0.0) 75%
+  );
+  filter: blur(18px);
+  z-index: -1;
+}
+/* ======================================== */
+
+
+/* ===== Revert subtitle to left + add spacing under title ===== */
+.recomp-summary .recomp-sub{
+  text-align: left;
+  margin-top: 6px;
+}
+
+.recomp-summary h3,
+.recomp-summary .title,
+.recomp-summary .recomp-title{
+  margin-bottom: 14px; /* more breathing room under headline */
+}
+/* ============================================================ */
+
+
+/* ===== Macronutrient footnote: disclaimer-style (no markup changes) ===== */
+#var-macrosFootnote,
+[data-var="MACROS_FOOTNOTE"]{
+  display:block;
+  margin-top: 10px;
+  font-size: 11px;
+  line-height: 1.3;
+  font-style: italic;
+  color: rgba(255,255,255,.48);
+  text-align: left;
+}
+/* ===================================================================== */
+
+
+/* ===== RESTORE: EXTREME CURRENT-BAR ANIMATION (curr/right bars only) ===== */
+#card-bars .bar{ position:relative; overflow:hidden; will-change: filter, box-shadow, opacity; }
+
+/* Calm previous bars */
+#card-bars .bar.bar-prev{
+  opacity: 0.65;
+  filter: saturate(0.65) brightness(0.90);
+  box-shadow: none !important;
+}
+
+/* Animated current/new bars */
+#card-bars .bar.bar-curr{
+  background-image: linear-gradient(90deg, rgba(255,255,255,.22), rgba(255,255,255,0) 32%);
+  background-blend-mode: screen;
+  animation: currBreathe 1.15s ease-in-out infinite;
+  filter: brightness(1.20) saturate(1.35);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.18),
+    0 0 10px rgba(255,255,255,.18),
+    0 0 28px rgba(255,255,255,.10);
+  z-index: 2;
+}
+
+/* shimmer sweep overlay */
+#card-bars .bar.bar-curr::before{
+  content:"";
+  position:absolute; inset:-40% -60%;
+  background: linear-gradient(115deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,.08) 35%,
+    rgba(255,255,255,.34) 50%,
+    rgba(255,255,255,.08) 65%,
+    rgba(255,255,255,0) 100%);
+  transform: translateX(-90%);
+  animation: currShimmer .70s linear infinite;
+  mix-blend-mode: screen; opacity:.9; pointer-events:none;
+}
+@keyframes currShimmer{
+  0%{transform:translateX(-90%);opacity:.25}
+  30%{opacity:.90}
+  100%{transform:translateX(90%);opacity:.25}
+}
+
+/* strobe highlight */
+#card-bars .bar.bar-curr::after{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.22), rgba(255,255,255,0) 28%),
+    radial-gradient(120px 80px at 70% 25%, rgba(255,255,255,.60), rgba(255,255,255,0) 65%);
+  opacity:0;
+  animation: currStrobe 1.05s steps(2,end) infinite;
+  mix-blend-mode: screen;
+  pointer-events:none;
+}
+@keyframes currStrobe{
+  0%, 60% { opacity: 0; }
+  61%     { opacity: .82; }
+  66%     { opacity: 0; }
+  100%    { opacity: 0; }
+}
+
+/* breathing intensity only */
+@keyframes currBreathe{
+  0%{
+    filter: brightness(1.15) saturate(1.22);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.18),
+      0 0 10px rgba(255,255,255,.16),
+      0 0 24px rgba(255,255,255,.08);
+  }
+  45%{
+    filter: brightness(1.55) saturate(1.85);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.24),
+      0 0 16px rgba(255,255,255,.48),
+      0 0 64px rgba(255,255,255,.26);
+  }
+  100%{
+    filter: brightness(1.15) saturate(1.22);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.18),
+      0 0 10px rgba(255,255,255,.16),
+      0 0 24px rgba(255,255,255,.08);
+  }
+}
+
+
+/* ===== Top-left Dietary Changes: Horizontal Prev vs New macro bars (scoped) ===== */
+#card-macros .dietary-hbars-wrap{ margin-top: 10px; }
+
+#card-macros .dietary-hbars-host{
+  height: 190px;              /* compact to fit under donut */
+  padding: 14px 14px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:10px;
+  position:relative;
+
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(255,255,255,.085) 0px,
+    rgba(255,255,255,.085) 1px,
+    rgba(255,255,255,0) 1px,
+    rgba(255,255,255,0) 28px
+  );
+  background-origin: content-box;
+  background-clip: content-box;
+}
+
+#card-macros .dietary-hbars-host .hGroup{
+  display:flex;
+  align-items:center;
+  gap:18px;
+  flex: 1 1 0;
+  min-width:0;
+}
+
+#card-macros .dietary-hbars-host .hLabelCol{
+  width:92px;
+  flex:0 0 92px;
+  text-align:left;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+#card-macros .dietary-hbars-host .hLabel{
+  font-size:12px;
+  font-weight:850;
+  letter-spacing:.2px;
+  opacity:.95;
+}
+
+#card-macros .dietary-hbars-host .hBarsCol{
+  flex:1 1 auto;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  align-items:flex-start;
+  position:relative;
+}
+
+#card-macros .dietary-hbars-host .barRow{
+  display:grid;
+  grid-template-columns: 40px 1fr 64px;
+  column-gap: 8px;
+  align-items:center;
+  width:100%;
+  min-width:0;
+}
+
+#card-macros .dietary-hbars-host .tag{
+  width:40px;
+  flex:0 0 40px;
+  font-size:10px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.45);
+  font-weight:900;
+  text-align:left;
+}
+#card-macros .dietary-hbars-host .valG{
+  width:64px;
+  flex:0 0 64px;
+  text-align:left;
+  font-variant-numeric: tabular-nums;
+  font-size:12px;
+  font-weight:900;
+  color:rgba(255,255,255,.86);
+  white-space:nowrap;
+}
+
+#card-macros .dietary-hbars-host .bar{
+  height:12px;
+  width:0px; /* JS sets */
+  border-radius:2px;
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow: 0 10px 25px rgba(0,0,0,.25);
+  position:relative;
+  overflow:hidden;
+  will-change: filter, box-shadow, opacity;
+  transition: filter 180ms ease, transform 180ms cubic-bezier(.16,.9,.2,1);
+}
+
+
+#card-macros .dietary-hbars-host .barRow .bar{
+  justify-self:start;
+  width: var(--w, 0%);
+  max-width: 100%;
+  min-width: 0;
+}
+#card-macros .dietary-hbars-host .bar:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.12);
+}
+
+#card-macros .dietary-hbars-host .bar-prev{
+  opacity: 0.65;
+  filter: saturate(0.65) brightness(0.90);
+  box-shadow: none;
+}
+
+#card-macros .dietary-hbars-host .bar-curr{
+  background-image: linear-gradient(90deg, rgba(255,255,255,.22), rgba(255,255,255,0) 32%);
+  background-blend-mode: screen;
+  animation: dietaryCurrBreathe 1.15s ease-in-out infinite;
+  filter: brightness(1.20) saturate(1.35);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.18),
+    0 0 10px rgba(255,255,255,.18),
+    0 0 28px rgba(255,255,255,.10);
+  z-index:2;
+}
+
+@keyframes dietaryCurrBreathe{
+  0%{
+    filter: brightness(1.15) saturate(1.22);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.18),
+      0 0 10px rgba(255,255,255,.16),
+      0 0 24px rgba(255,255,255,.08);
+  }
+  45%{
+    filter: brightness(1.55) saturate(1.85);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.24),
+      0 0 16px rgba(255,255,255,.48),
+      0 0 64px rgba(255,255,255,.26);
+  }
+  100%{
+    filter: brightness(1.15) saturate(1.22);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.18),
+      0 0 10px rgba(255,255,255,.16),
+      0 0 24px rgba(255,255,255,.08);
+  }
+}
+
+#card-macros .dietary-hbars-host .bar-curr::before{
+  content:"";
+  position:absolute; inset:-40% -60%;
+  background: linear-gradient(115deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,.08) 35%,
+    rgba(255,255,255,.34) 50%,
+    rgba(255,255,255,.08) 65%,
+    rgba(255,255,255,0) 100%);
+  transform: translateX(-90%);
+  animation: dietaryCurrShimmer .70s linear infinite;
+  mix-blend-mode: screen; opacity:.9; pointer-events:none;
+}
+@keyframes dietaryCurrShimmer{
+  0%{transform:translateX(-90%);opacity:.25}
+  30%{opacity:.90}
+  100%{transform:translateX(90%);opacity:.25}
+}
+
+#card-macros .dietary-hbars-host .bar-curr::after{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.22), rgba(255,255,255,0) 28%),
+    radial-gradient(120px 80px at 70% 25%, rgba(255,255,255,.60), rgba(255,255,255,0) 65%);
+  opacity:0;
+  animation: dietaryCurrStrobe 1.05s steps(2,end) infinite;
+  mix-blend-mode: screen;
+  pointer-events:none;
+}
+@keyframes dietaryCurrStrobe{
+  0%, 60% { opacity: 0; }
+  61%     { opacity: .82; }
+  66%     { opacity: 0; }
+  100%    { opacity: 0; }
+}
+
+/* % change at far right */
+#card-macros .dietary-hbars-host .pct{
+  width:104px;
+  text-align:right;
+  align-self:center;
+  font-weight:800;
+  font-size:11px;
+  font-variant-numeric: tabular-nums;
+  white-space:nowrap;
+  pointer-events:none;
+}
+#card-macros .dietary-hbars-host .pct.good{ color: rgba(150,255,170,.96); }
+#card-macros .dietary-hbars-host .pct.bad{  color: rgba(255,140,140,.86); }
+#card-macros .dietary-hbars-host .pct.neutral{ color: rgba(255,255,255,.55); }
+
+#card-macros .dietary-hbars-host .barRow .bar{
+  /* IMPORTANT: allow JS-set % widths to actually apply (do NOT override with width:auto!important) */
+  flex: 0 0 auto;
+  width: var(--w, 0%);
+  max-width: 100%;
+  min-width: 0;
+}
+/* ======================================================================= */
+
+
+/* ===== KPI ARROWS (goal-aware) ===== */
+.recomp-kpi .v{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.kpi-arrow{
+  font-size:18px;
+  font-weight:900;
+  line-height:1;
+  opacity:0;
+}
+.kpi-arrow.up{
+  opacity:1;
+  color: rgba(120,255,180,.95);
+  text-shadow:
+    0 0 6px rgba(120,255,180,.6),
+    0 0 14px rgba(120,255,180,.45),
+    0 0 28px rgba(120,255,180,.25);
+  animation: arrowPulseUp 1.4s ease-in-out infinite;
+}
+.kpi-arrow.up::before{ content:"↑"; }
+
+.kpi-arrow.down{
+  opacity:1;
+  color: rgba(255,120,120,.95);
+  text-shadow:
+    0 0 6px rgba(255,120,120,.6),
+    0 0 14px rgba(255,120,120,.45),
+    0 0 28px rgba(255,120,120,.25);
+  animation: arrowPulseDown 1.4s ease-in-out infinite;
+}
+.kpi-arrow.down::before{ content:"↓"; }
+
+@keyframes arrowPulseUp{
+  0%{ transform: translateY(0) scale(1); }
+  50%{ transform: translateY(-2px) scale(1.15); }
+  100%{ transform: translateY(0) scale(1); }
+}
+@keyframes arrowPulseDown{
+  0%{ transform: translateY(0) scale(1); }
+  50%{ transform: translateY(2px) scale(1.15); }
+  100%{ transform: translateY(0) scale(1); }
+}
+
+
+/* ===== TOP-RIGHT BAR CHART GRID BACKGROUND ===== */
+#card-bars .chart{
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      rgba(255,255,255,.07) 0px,
+      rgba(255,255,255,.07) 1px,
+      rgba(255,255,255,0) 1px,
+      rgba(255,255,255,0) 28px
+    ),
+    repeating-linear-gradient(
+      to top,
+      rgba(255,255,255,.05) 0px,
+      rgba(255,255,255,.05) 1px,
+      rgba(255,255,255,0) 1px,
+      rgba(255,255,255,0) 28px
+    );
+  background-origin: content-box;
+  background-clip: content-box;
+}
+
+
+/* ===== Approximation marker: visibly squiggly (~) ===== */
+.recomp-kpi .approx{
+  font-family: "Comic Sans MS","Segoe Script","Bradley Hand","Apple Chancery","Brush Script MT",cursive;
+  font-weight: 900;
+  display:inline-block;
+  margin-right: 2px;
+  transform: rotate(-6deg) scale(1.05);
+  text-shadow:
+    0 0 6px rgba(255,255,255,.45),
+    0 0 14px rgba(255,255,255,.25);
+  opacity:.95;
+}
+
+/* ===== Inline change arrows for bottom-right KPIs ===== */
+.kpi-inline{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+
+.kpi-inline .chg-arrow{
+  font-size:14px;
+  font-weight:950;
+  line-height:1;
+  display:inline-block;
+  transform: translateY(-1px);
+}
+
+.kpi-inline .chg-arrow.up{
+  color: rgba(120,220,140,.95);
+  text-shadow:
+    0 0 6px rgba(120,220,140,.6),
+    0 0 14px rgba(120,220,140,.45);
+}
+
+.kpi-inline .chg-arrow.down{
+  color: rgba(255,120,120,.95);
+  text-shadow:
+    0 0 6px rgba(255,120,120,.6),
+    0 0 14px rgba(255,120,120,.45);
+}
+
+.kpi-inline .chg-arrow.up::before{ content:"↑"; }
+.kpi-inline .chg-arrow.down::before{ content:"↓"; }
+
+
+/* ===== PATCH: macro info "pods" (right of donut) — prevent text overlap ===== */
+#card-macros .macroInfo{ min-width:0; }
+#card-macros .legend{ gap:12px; }
+
+/* Make each pod taller + allow wrapping safely */
+#card-macros .row{
+  display:grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap:12px !important;
+  align-items:start !important;
+  padding:14px 14px !important;
+  border-radius:16px !important;
+  min-height:74px;            /* gives room for 2 lines + percent */
+}
+
+/* Left column (label + grams/cals) */
+#card-macros .row > div:first-child{
+  min-width:0;
+}
+#card-macros .k{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:950;
+  letter-spacing:.2px;
+  font-size:14px;
+  line-height:1.15;
+}
+#card-macros .meta{
+  margin-top:6px !important;
+  font-size:12px !important;
+  line-height:1.15 !important;
+  color:rgba(255,255,255,.72) !important;
+  font-weight:800 !important;
+  white-space:normal !important;
+}
+
+/* Right column (percent + optional subtext) */
+#card-macros .val{
+  text-align:right !important;
+  font-variant-numeric: tabular-nums;
+  font-weight:1000;
+  font-size:14px !important;
+  line-height:1.05 !important;
+  white-space:nowrap !important;
+  padding-top:2px;
+}
+#card-macros .val small{
+  display:block;
+  font-weight:850;
+  font-size:11px !important;
+  line-height:1.05 !important;
+  margin-top:6px !important;
+  color:rgba(255,255,255,.62) !important;
+}
+
+/* If any controls are inside the pods, keep them from colliding */
+#card-macros .row input,
+#card-macros .row button{
+  max-width:100%;
+}
+/* ===== END PATCH ===== */
+
+
+/* ===== Responsive viewport scaling (Bootstrap-like) =====
+   - Keeps the report crisp and centered at any window size
+   - Scales the whole 1620x1620 design to fit the viewport
+   - Disabled during export (?export=1) so PDF/PNG stays exact
+========================================================= */
+html, body{
+  width:100%;
+  height:100%;
+}
+
+body{
+  /* Let the viewport wrapper handle centering/padding */
+  display:block;
+  min-height:100vh;
+  padding:0 !important;
+  align-items:unset !important;
+  justify-content:unset !important;
+}
+
+#viewport{
+  width:100vw;
+  height:100vh;
+  display:flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding:24px;
+  overflow:auto;
+
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+
+  padding-top: 24px;
+}
+
+#pageWrap{
+  position:relative;
+  /* JS sets exact pixel width/height to match the scaled box */
+}
+
+#page{ position: relative;
+  left:0; top:0;
+  transform-origin: top left;
+}
+
+/* On very small screens, allow a bit of breathing room */
+@media (max-width: 820px){
+  #viewport{ padding:14px; }
+}
+/* ===== END responsive scaling ===== */
+
+</style>
+</head>
+<body>
+<div id="viewport"><div id="pageWrap"><div class="page" id="page">
+<div class="inner">
+<div class="header">
+<div class="title">
+<h1 data-var="REPORT_TITLE" id="var-reportTitle"><span class="token">{{REPORT_TITLE}}</span></h1>
+<div class="subtitle" data-var="REPORT_SUBTITLE" id="var-subtitle">
+<span class="token">{{REPORT_SUBTITLE}}</span>
+</div>
+</div>
+<div class="meta">
+<div class="client" data-var="CLIENT_LABEL" id="var-clientLabel"><span class="token">{{CLIENT_LABEL}}</span></div>
+<div class="date" data-var="REPORT_DATE" id="var-reportDate"><span class="token">{{REPORT_DATE}}</span></div>
+<div class="chips">
+<div data-var="HEADER_CHIP_1" id="var-chip1"><span class="token">{{HEADER_CHIP_1}}</span></div>
+<div data-var="HEADER_CHIP_2" id="var-chip2"><span class="token">{{HEADER_CHIP_2}}</span></div>
+<div data-var="HEADER_CHIP_3" id="var-chip3"><span class="token">{{HEADER_CHIP_3}}</span></div>
+</div>
+<div class="header-disclaimer">This report is for educational purposes only and does not constitute medical or dietary treatment. Consult a licensed healthcare professional before making significant dietary or lifestyle changes.</div>
+</div>
+</div>
+<div class="rule"></div>
+<div class="grid">
+<!-- TOP LEFT -->
+<section class="card" id="card-macros">
+<h2 data-var="MACROS_TITLE" id="var-macrosTitle"><span class="token">{{MACROS_TITLE}}</span></h2>
+<div class="macroDonutShell">
+<div class="macroDonutGrid">
+<div class="macroViz">
+<div class="donutWrap" id="donutWrap">
+<svg aria-label="Macro donut chart" id="donut" viewbox="0 0 200 200"></svg>
+<div aria-hidden="true" class="tip" id="tip" role="tooltip">
+<div class="tTitle"><span class="tDot" id="tipDot"></span><span id="tipTitle">—</span></div>
+<div class="tLine"><span>Grams</span><b id="tipG">—</b></div>
+<div class="tLine"><span>Calories</span><b id="tipC">—</b></div>
+<div class="tLine"><span>Share</span><b id="tipP">—</b></div>
+<div class="tLine" style="margin-top:8px; opacity:.9"><span>Examples</span><b id="tipE" style="font-weight:900">—</b></div>
+<div id="tipList" style="margin-top:6px; display:grid; gap:6px;"></div>
+</div>
+<div class="center">
+<div class="centerBox">
+<div class="centerLabel">Total Calories</div>
+<div class="centerVal" id="cal">—</div>
+<div class="centerSub" id="sub">Macro targets</div>
+</div>
+</div>
+</div>
+</div>
+<div class="macroInfo">
+<div class="legend" id="legend"></div>
+</div>
+</div>
+</div>
+<div class="dietary-inline">
+<h2 data-var="TABLE_TITLE" id="var-tableTitle"><span class="token">{{TABLE_TITLE}}</span></h2>
+
+  <div class="dietary-hbars-wrap">
+    <div class="dietary-hbars-host hHost" id="dietaryMacroBars"></div>
+  </div>
+
+<div class="tiny" data-var="MACROS_FOOTNOTE" id="var-macrosFootnote"><span class="token">{{MACROS_FOOTNOTE}}</span></div>
+</div></section>
+<!-- TOP RIGHT -->
+<section class="card" id="card-bars">
+<h2 data-var="BARS_TITLE" id="var-barsTitle"><span class="token">{{BARS_TITLE}}</span></h2>
+<div class="bars-wrap">
+<div aria-label="Bar chart" class="chart" id="chart-bars"></div>
+<div aria-label="Legend" class="kpis kpis-bars">
+<div aria-label="Previous vs Current comparison" class="comp-table-wrap">
+<div aria-label="Scrollable comparison table" class="comp-table-scroll">
+<table aria-label="Prev vs New comparison" class="comp-table inverted">
+<thead>
+<tr id="comp-table-head-row">
+<th></th>
+<!-- metric headers injected by JS -->
+</tr>
+</thead>
+<tbody>
+<tr id="comp-row-prev">
+<td class="row-label">Prev</td>
+</tr>
+<tr id="comp-row-new">
+<td class="row-label">New</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="data-color-key">
+<div class="key-item">
+<span class="swatch prev-swatch"></span>
+<span>Previous</span>
+</div>
+<div class="key-item">
+<span class="swatch curr-swatch"></span>
+<span>New</span>
+</div>
+</div>
+</div>
+</div>
+
+<div aria-label="Recomposition summary" class="recomp-summary">
+<div class="recomp-title">You’re recomping successfully.</div>
+<div class="recomp-sub">Fat ↓  |  Lean Mass ↑  |  Performance ↑</div>
+<div class="recomp-kpis">
+<div class="recomp-kpi">
+<div class="k">Fat change</div>
+<div class="v neg">-6.8 lb</div>
+</div>
+<div class="recomp-kpi">
+<div class="k">Lean mass</div>
+<div class="v pos">+4.2 lb</div>
+</div>
+<div class="recomp-kpi">
+<div class="k">Strength</div>
+<div class="v pos">+18%</div>
+</div>
+
+<div class="recomp-kpi">
+<div class="k">Calorie goal</div>
+<div class="v pos">3,025</div>
+</div>
+<div class="recomp-kpi">
+<div class="k">Weight</div>
+<div class="v pos">186</div>
+</div>
+<div class="recomp-kpi">
+<div class="k">Daily steps</div>
+<div class="v pos">9,250</div>
+</div>
+
+</div>
+</div>
+</section>
+<!-- BOTTOM LEFT -->
+<section class="card" id="card-table">
+<!-- rows injected by JS -->
+</section></div>
+<div class="bl-bodycomp">
+<h3 class="bl-subtitle">Body Composition</h3>
+<div class="bars-wrap">
+<div aria-label="Bar chart" class="chart" id="chart-bars-bl"></div>
+<div aria-label="Legend" class="kpis kpis-bars">
+<div aria-label="Previous vs Current comparison" class="comp-table-wrap">
+<div aria-label="Scrollable comparison table" class="comp-table-scroll">
+<table aria-label="Prev vs New comparison" class="comp-table inverted">
+<thead>
+<tr id="comp-table-head-row-bl">
+<th></th>
+<!-- metric headers injected by JS -->
+</tr>
+</thead>
+<tbody>
+<tr id="comp-row-prev">
+<td class="row-label">Prev</td>
+</tr>
+<tr id="comp-row-new">
+<td class="row-label">New</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="data-color-key">
+<div class="key-item">
+<span class="swatch prev-swatch"></span>
+<span>Previous</span>
+</div>
+<div class="key-item">
+<span class="swatch curr-swatch"></span>
+<span>New</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- BOTTOM RIGHT -->
+<section class="card" id="card-line">
+<h2 data-var="LINE_TITLE" id="var-lineTitle"><span class="token">{{LINE_TITLE}}</span></h2>
+<div class="line-wrap">
+<div class="gtTop">
+<div aria-label="Trajectory legend" class="gtLegend">
+<span class="gtKey"><i class="gtSwatch gtReal"></i> Realistic</span>
+<span class="gtKey"><i class="gtSwatch gtOpt"></i> Optimized</span>
+<span class="gtKey"><i class="gtSwatch gtNow"></i> You are here</span>
+</div>
+<div aria-label="Trajectory stats" class="gtStats">
+<div class="gtStat">
+<div class="gtStatLabel">Realistic ETA</div>
+<div class="gtStatVal" id="gtEtaReal">—</div>
+</div>
+<div class="gtStat">
+<div class="gtStatLabel">Optimized ETA</div>
+<div class="gtStatVal" id="gtEtaOpt">—</div>
+</div>
+</div>
+</div>
+<div aria-label="Goal timeline chart" class="line" id="chart-line">
+<div class="axis-label" data-var="AXIS_TOP" id="var-axisTop" style="left:10px; top:10px"><span class="token">{{AXIS_TOP}}</span></div>
+<div class="axis-label" data-var="AXIS_BOTTOM" id="var-axisBottom" style="left:10px; bottom:10px"><span class="token">{{AXIS_BOTTOM}}</span></div>
+<div class="axis-label" data-var="AXIS_RIGHT" id="var-axisRight" style="right:10px; bottom:10px"><span class="token">{{AXIS_RIGHT}}</span></div>
+</div>
+<div class="brq-disclaimer">
+  This report is for educational purposes only and does not constitute medical or dietary treatment.
+  Consult a licensed healthcare professional before making significant dietary or lifestyle changes.
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+</div>
+
+<script src="./report-data.js"></script>
+
+<script>
+/* ===== fitToViewport(): scale the entire 1620x1620 report to any window size ===== */
+(function(){
+  const DESIGN_W = 1620;
+  const DESIGN_H = 1620;
+
+  function fitToViewport(){
+    const qs = new URLSearchParams(window.location.search);
+    const exporting = qs.get("export") === "1"; // used by export.py
+    const page = document.getElementById("page");
+    const wrap = document.getElementById("pageWrap");
+    const vp   = document.getElementById("viewport");
+    if(!page || !wrap || !vp) return;
+
+    // During export: lock to exact design pixels (no scaling)
+    if(exporting){
+      page.style.transform = "scale(1)";
+      page.style.width  = DESIGN_W + "px";
+      page.style.height = DESIGN_H + "px";
+      wrap.style.width  = DESIGN_W + "px";
+      wrap.style.height = DESIGN_H + "px";
+      vp.style.overflow = "hidden";
+      return;
+    }
+
+    const pad = (window.innerWidth <= 820) ? 14 : 24;
+    const vw = Math.max(320, window.innerWidth  - pad*2);
+    const vh = Math.max(320, window.innerHeight - pad*2);
+
+    // Scale down to fit; never scale above 1 (keeps type crisp)
+    let s = Math.min(vw / DESIGN_W, vh / DESIGN_H, 1.25);
+    s = Math.max(1, s);
+
+    page.style.width  = DESIGN_W + "px";
+    page.style.height = DESIGN_H + "px";
+    page.style.transform = "scale(" + s.toFixed(4) + ")";
+
+    // Transform doesn't affect layout, so we size the wrapper to the scaled box for true centering
+    wrap.style.width  = Math.round(DESIGN_W * s) + "px";
+    wrap.style.height = Math.round(DESIGN_H * s) + "px";
+  }
+
+  // Make it available (export.py calls it once)
+  window.fitToViewport = fitToViewport;
+
+  // Debounced resize
+  let raf = null;
+  function schedule(){
+    if(raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(fitToViewport);
+  }
+  window.addEventListener("resize", schedule);
+  window.addEventListener("orientationchange", schedule);
+  document.addEventListener("DOMContentLoaded", fitToViewport);
+})();
+</script>
+
+<script>
+  window.__MACRO_OVERRIDES = window.__MACRO_OVERRIDES || {};
+    /**
+     * Populate this object from your Python build_report.py (or JSON) and everything
+     * with a data-var token can be swapped, plus charts get rendered.
+     */
+    window.REPORT_DATA = window.REPORT_DATA || {
+      tokens: {
+        REPORT_TITLE: "Progress Report",
+        REPORT_SUBTITLE: "A coach-generated results summary for the client, including macros, adherence, and trend lines.",
+        CLIENT_LABEL: "Client Name",
+        REPORT_DATE: "MM.DD.YYYY",
+        HEADER_CHIP_1: "L",
+        HEADER_CHIP_2: "3",
+        HEADER_CHIP_3: "XT",
+
+        MACROS_TITLE: "Macronutrient Breakdown",
+        PROTEIN_LABEL: "Protein",
+        PROTEIN_PCT: "40.0%",
+        CARB_LABEL: "Carbs",
+        CARB_PCT: "35.0%",
+        FAT_LABEL: "Fat",
+        FAT_PCT: "25.0%",
+        MACROS_FOOTNOTE: "Auto-calculated from daily macro targets.",
+
+        BARS_TITLE: "Composition Changes",
+        LEGEND_PREV: "",
+        LEGEND_CUR: "",
+        TABLE_TITLE: "Dietary Changes",
+        TABLE_COL_1: "Macro",
+        TABLE_COL_2: "Previous",
+        TABLE_COL_3: "Updated",
+        ROW_1_LABEL: "Protein",
+        ROW_1_MID: "190 g",
+        ROW_1_VALUE: "210 g",
+        ROW_2_LABEL: "Carbs",
+        ROW_2_MID: "210 g",
+        ROW_2_VALUE: "180 g",
+        ROW_3_LABEL: "Fats",
+        ROW_3_MID: "70 g",
+        ROW_3_VALUE: "65 g",
+        ROW_4_LABEL: "TDEE",
+        ROW_4_MID: "Target",
+        ROW_4_VALUE: "2,650",
+        ROW_5_LABEL: "Daily Calories",
+        ROW_5_MID: "Goal",
+        ROW_5_VALUE: "2,150",
+        ROW_6_LABEL: "Protein",
+        ROW_6_MID: "Goal",
+        ROW_6_VALUE: "165 g",
+        ROW_7_LABEL: "Carbs",
+        ROW_7_MID: "Goal",
+        ROW_7_VALUE: "185 g",
+        ROW_8_LABEL: "Fats",
+        ROW_8_MID: "Goal",
+        ROW_8_VALUE: "65 g",
+        LINE_TITLE: "Weekly Trends",
+        AXIS_TOP: "Body Fat %",
+        AXIS_BOTTOM: "Week 1",
+        AXIS_RIGHT: "Week N"
+      },
+
+	  macros: [
+	    { key:"Protein", value:40, color:"var(--green)" },   // green
+	    { key:"Carbs",   value:35, color:"var(--orange)" },  // yellow
+	    { key:"Fat",     value:25, color:"#FF4D9D" }     // pink
+	  ],
+	  
+
+      bars: {
+        labels: ["Weight", "Bodyfat %", "TDEE", "CICO Goal", "Pull-Ups", "Push-Ups"],
+        prev: [190, 24, 6, 28, 2550, 2300],
+        curr: [180, 22, 8, 35, 2450, 2100]
+      },
+
+      lines: [
+        { name:"Body Fat %", color:"var(--orange)", values:[19.2, 18.7, 18.7, 18.3, 18.1, 18.0, 17.8] },
+        { name:"Weight", color:"var(--blue)", values:[187.0, 186.2, 185.8, 185.1, 184.6, 184.0, 183.2] }
+      ]
+    };
+
+    function applyTokens(){
+      const tokens = (window.REPORT_DATA && window.REPORT_DATA.tokens) || {};
+      document.querySelectorAll("[data-var]").forEach(el=>{
+        const k = el.getAttribute("data-var");
+        if(tokens[k] !== undefined){
+          el.innerHTML = '<span class="token">' + String(tokens[k]).replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span>';
+        }
+      });
+      // keep <title> in sync
+      if(tokens.REPORT_TITLE) document.title = tokens.REPORT_TITLE;
+    }
+
+    // ----- Donut chart (SVG) -----
+    function polarToCartesian(cx, cy, r, angle){
+      const rad = (angle-90) * Math.PI/180;
+      return { x: cx + (r*Math.cos(rad)), y: cy + (r*Math.sin(rad)) };
+    }
+    function describeArc(cx, cy, r, startAngle, endAngle){
+      const start = polarToCartesian(cx, cy, r, endAngle);
+      const end = polarToCartesian(cx, cy, r, startAngle);
+      const largeArc = (endAngle-startAngle) <= 180 ? "0" : "1";
+      return ["M", start.x, start.y, "A", r, r, 0, largeArc, 0, end.x, end.y].join(" ");
+    }
+    function renderDonut(){
+      const svg = document.getElementById("donut");
+      if(!svg) return;
+
+      // We drive the donut from the SAME macro logic used for the legend/tooltips:
+      // - Protein grams = bodyweight
+      // - Remaining calories split Carbs 65% / Fat 35%
+      const items = getMacroDataFromReport();
+      const data = (items || []).map(it => ({
+        key: it.key,
+        grams: Number(it.grams ?? it.value ?? 0) || 0,
+        color: it.color || "white"
+      }));
+
+      // Slice by CALORIES (so fat isn't visually under-represented)
+      const totalCal = data.reduce((s,d)=>{
+        const g = Number(d.grams||0);
+        const c = (d.key === "Fat") ? (g*9) : (g*4);
+        return s + c;
+      }, 0) || 1;
+
+      const cx=100, cy=100, r=78, thickness=26;
+      svg.innerHTML = "";
+
+      // background ring
+      const bg = document.createElementNS("http://www.w3.org/2000/svg","circle");
+      bg.setAttribute("cx",cx); bg.setAttribute("cy",cy); bg.setAttribute("r",r);
+      bg.setAttribute("fill","none");
+      bg.setAttribute("stroke","rgba(255,255,255,.08)");
+      bg.setAttribute("stroke-width",thickness);
+      svg.appendChild(bg);
+
+      let angle = 0;
+      data.forEach(d=>{
+        const g = Number(d.grams||0);
+        const cal = (d.key === "Fat") ? (g*9) : (g*4);
+        const slice = 360 * (cal/totalCal);
+
+        // Dark outline behind slice for contrast (makes colors pop)
+        const outline = document.createElementNS("http://www.w3.org/2000/svg","path");
+        outline.setAttribute("d", describeArc(cx, cy, r, angle, angle+slice));
+        outline.setAttribute("fill","none");
+        outline.setAttribute("stroke-width", thickness + 3);
+        outline.setAttribute("stroke-linecap","butt");
+        outline.setAttribute("stroke","rgba(0,0,0,.55)");
+        svg.appendChild(outline);
+
+        const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+        path.setAttribute("d", describeArc(cx, cy, r, angle, angle+slice));
+        path.setAttribute("fill","none");
+        path.setAttribute("stroke", d.color || "white");
+        path.setAttribute("stroke-width", thickness);
+        path.setAttribute("stroke-linecap","butt");
+        svg.appendChild(path);
+
+        angle += slice;
+      });
+
+      // inner cutout
+      const hole = document.createElementNS("http://www.w3.org/2000/svg","circle");
+      hole.setAttribute("cx",cx); hole.setAttribute("cy",cy); hole.setAttribute("r",r-thickness+2);
+      hole.setAttribute("fill","var(--bg0)");
+      svg.appendChild(hole);
+    }
+
+
+
+    
+
+
+  // Food examples to display on hover (edit/add freely)
+  const FOOD_EXAMPLES = {
+    "Protein": [
+      "Boneless skinless chicken breast",
+      "Ground turkey",
+      "Egg whites",
+      "Greek yogurt",
+      "Cottage cheese",
+      "Canned tuna",
+      "Salmon",
+      "Shrimp"
+    ],
+    "Carbs": [
+      "Fruit",
+      "Vegetables",
+      "Sweet potato",
+      "Brown rice",
+      "Oatmeal",
+      "Whole-wheat pasta",
+      "Beans",
+      "High-fiber cereal"
+    ],
+    "Fat": [
+      "Avocado",
+      "Natural peanut butter",
+      "Olives / olive oil",
+      "Low-sodium nuts",
+      "Flaxseed",
+      "Pumpkin seeds",
+      "Sunflower seeds",
+      "Cold-water fish"
+    ]
+  };
+
+  // If REPORT_DATA.macros exists, use it; else fall back to demo.
+  function numFromAny(v){
+    const n = Number(String(v ?? "").replace(/[^0-9.\-]/g,""));
+    return Number.isFinite(n) ? n : null;
+  }
+
+  // Try to discover CICO + current weight from REPORT_DATA.tokens (adjust token keys if needed)
+  function getCicoAndWeight(){
+    const t = (window.REPORT_DATA && window.REPORT_DATA.tokens) || {};
+    const bRaw = (window.REPORT_DATA && window.REPORT_DATA.bars) || null;
+
+    // Robust number parsing: "2,150", "2150 cal", "165 g" -> 2150 / 165
+    const toNum = (v)=>{
+      if(v === null || v === undefined) return null;
+      if(typeof v === "number") return isFinite(v) ? v : null;
+      const s = String(v).replace(/,/g,"").trim();
+      const m = s.match(/-?\d+(?:\.\d+)?/);
+      return m ? Number(m[0]) : null;
+    };
+
+    // Pull a metric from bars (curr value) by label match (case-insensitive)
+    const fromBarsCurr = (label)=>{
+      if(!bRaw) return null;
+      // normalizeBarsInput exists in your file; use it if present.
+      let labels = [];
+      let curr = [];
+      try{
+        if(typeof normalizeBarsInput === "function"){
+          const bn = normalizeBarsInput(bRaw);
+          labels = (bn.labels || []).map(x=>String(x||""));
+          curr   = (bn.curr || []).map(x=>toNum(x) ?? 0);
+        }else{
+          labels = (bRaw.labels || []).map(x=>String(x||""));
+          curr   = (bRaw.curr || []).map(x=>toNum(x) ?? 0);
+        }
+      }catch(_e){
+        labels = (bRaw.labels || []).map(x=>String(x||""));
+        curr   = (bRaw.curr || []).map(x=>toNum(x) ?? 0);
+      }
+      const idx = labels.findIndex(l => String(l||"").trim().toLowerCase() === String(label).trim().toLowerCase());
+      if(idx < 0) return null;
+      return toNum(curr[idx]);
+    };
+
+    // CICO sources (most reliable first)
+    const cico =
+      toNum(t.CICO_GOAL) ??
+      toNum(t.DAILY_CAL_GOAL) ??
+      toNum(t.CICO) ??
+      toNum(t.CALORIE_GOAL) ??
+      toNum(t.ROW_5_VALUE) ??                 // "Daily Calories" row in your tokens fileciteturn20file0L6-L9
+      fromBarsCurr("CICO Goal");
+
+    // Weight sources
+    const wt =
+      toNum(t.WEIGHT_CURR) ??
+      toNum(t.CUR_WEIGHT) ??
+      toNum(t.WEIGHT) ??
+      toNum(t.CURRENT_WEIGHT) ??
+      fromBarsCurr("Weight");
+
+    return { cico, wt };
+  }
+
+  function clampNum(n, min, max){
+    n = Number(n);
+    if(Number.isNaN(n)) return min;
+    return Math.max(min, Math.min(max, n));
+  }
+
+  // Keep Protein calories fixed, and re-balance Carbs/Fat so total stays at CICO.
+  function setMacroOverrideBalanced(changedKey, grams){
+    const ov = window.__MACRO_OVERRIDES || (window.__MACRO_OVERRIDES = {});
+
+    const { cico, wt } = getCicoAndWeight();
+    if(!cico || !wt){
+      ov[changedKey] = grams;
+      ov.__driver = changedKey;
+      window.__MACRO_OVERRIDES = ov;
+      return { Carbs: ov.Carbs, Fat: ov.Fat };
+    }
+
+    const proteinG = Math.round(wt);
+    const remainingCal = Math.max(0, cico - (proteinG * 4));
+
+    if(changedKey === "Carbs"){
+      const carbsG = Math.max(0, Math.round(Number(grams||0)));
+      const fatCal = Math.max(0, remainingCal - (carbsG * 4));
+      const fatG = Math.round(fatCal / 9);
+      ov.Carbs = carbsG;
+      ov.Fat = fatG;
+      ov.__driver = "Carbs";
+      window.__MACRO_OVERRIDES = ov;
+      return { Carbs: carbsG, Fat: fatG };
+    }
+
+    if(changedKey === "Fat"){
+      const fatG = Math.max(0, Math.round(Number(grams||0)));
+      const carbCal = Math.max(0, remainingCal - (fatG * 9));
+      const carbsG = Math.round(carbCal / 4);
+      ov.Fat = fatG;
+      ov.Carbs = carbsG;
+      ov.__driver = "Fat";
+      window.__MACRO_OVERRIDES = ov;
+      return { Carbs: carbsG, Fat: fatG };
+    }
+
+    return { Carbs: ov.Carbs, Fat: ov.Fat };
+  }
+
+  function syncMacroControls(balanced){
+    if(!balanced) return;
+    ["Carbs","Fat"].forEach(k=>{
+      const g = balanced[k];
+      if(g == null) return;
+      document.querySelectorAll('.macroRange[data-key="'+k+'"]').forEach(el=>{ el.value = g; });
+      document.querySelectorAll('.macroNum[data-key="'+k+'"]').forEach(el=>{ el.value = g; });
+    });
+  }
+
+
+  function applyMacroOverrides(items, remainingCal){
+    const ov = window.__MACRO_OVERRIDES || (window.__MACRO_OVERRIDES = {});
+
+    if(!remainingCal || !Number.isFinite(remainingCal)){
+      return items.map(it=>{
+        if((it.key === "Carbs" || it.key === "Fat") && ov[it.key] != null){
+          const g = Math.max(0, Math.round(Number(ov[it.key])));
+          if(!Number.isNaN(g)) return { ...it, grams: g };
+        }
+        return it;
+      });
+    }
+
+    let carbsG = null, fatG = null;
+    items.forEach(it=>{
+      if(it.key === "Carbs") carbsG = Math.round(Number(it.grams||0));
+      if(it.key === "Fat") fatG = Math.round(Number(it.grams||0));
+    });
+
+    const driver = (ov.__driver === "Fat") ? "Fat" : "Carbs";
+
+    if(driver === "Carbs" && ov.Carbs != null){
+      carbsG = Math.max(0, Math.round(Number(ov.Carbs)));
+      const fatCal = Math.max(0, remainingCal - (carbsG * 4));
+      fatG = Math.round(fatCal / 9);
+      ov.Fat = fatG;
+    } else if(driver === "Fat" && ov.Fat != null){
+      fatG = Math.max(0, Math.round(Number(ov.Fat)));
+      const carbCal = Math.max(0, remainingCal - (fatG * 9));
+      carbsG = Math.round(carbCal / 4);
+      ov.Carbs = carbsG;
+    } else {
+      if(ov.Carbs != null){
+        carbsG = Math.max(0, Math.round(Number(ov.Carbs)));
+        const fatCal = Math.max(0, remainingCal - (carbsG * 4));
+        fatG = Math.round(fatCal / 9);
+        ov.Fat = fatG;
+        ov.__driver = "Carbs";
+      } else if(ov.Fat != null){
+        fatG = Math.max(0, Math.round(Number(ov.Fat)));
+        const carbCal = Math.max(0, remainingCal - (fatG * 9));
+        carbsG = Math.round(carbCal / 4);
+        ov.Carbs = carbsG;
+        ov.__driver = "Fat";
+      }
+    }
+
+    window.__MACRO_OVERRIDES = ov;
+
+    return items.map(it=>{
+      if(it.key === "Carbs" && carbsG != null) return { ...it, grams: carbsG };
+      if(it.key === "Fat" && fatG != null) return { ...it, grams: fatG };
+      return it;
+    });
+  }
+
+  function getMacroDataFromReport(){
+    const { cico, wt } = getCicoAndWeight();
+
+    // If we can’t find either value, fall back to your existing defaults
+    if(!cico || !wt){
+          return applyMacroOverrides([
+{ key:"Protein", grams:180, color:getComputedStyle(document.documentElement).getPropertyValue('--m1').trim() },
+        { key:"Carbs",   grams:220, color:getComputedStyle(document.documentElement).getPropertyValue('--m2').trim() },
+        { key:"Fat",     grams:70,  color:getComputedStyle(document.documentElement).getPropertyValue('--m3').trim() },
+    ], remainingCal);
+}
+
+    // Your rule:
+    // Protein grams = bodyweight
+    const proteinG = Math.round(wt);
+
+    // Remaining calories after protein
+    const remainingCal = Math.max(0, cico - (proteinG * 4));
+
+    // Split remaining calories: carbs 65%, fats 35%
+    const carbCal = remainingCal * 0.65;
+    const fatCal  = remainingCal * 0.35;
+
+    const carbsG = Math.round(carbCal / 4);
+    const fatG   = Math.round(fatCal / 9);
+
+        return applyMacroOverrides([
+{ key:"Protein", grams:proteinG, color:getComputedStyle(document.documentElement).getPropertyValue('--m1').trim() },
+      { key:"Carbs",   grams:carbsG,   color:getComputedStyle(document.documentElement).getPropertyValue('--m2').trim() },
+      { key:"Fat",     grams:fatG,     color:getComputedStyle(document.documentElement).getPropertyValue('--m3').trim() },
+    ]);
+  }
+
+
+  function polarToCartesian(cx, cy, r, angle){
+    const rad = (angle-90) * Math.PI/180;
+    return { x: cx + (r*Math.cos(rad)), y: cy + (r*Math.sin(rad)) };
+  }
+  function describeArc(cx, cy, r, startAngle, endAngle){
+    const start = polarToCartesian(cx, cy, r, endAngle);
+    const end   = polarToCartesian(cx, cy, r, startAngle);
+    const largeArc = (endAngle-startAngle) <= 180 ? "0" : "1";
+    return ["M", start.x, start.y, "A", r, r, 0, largeArc, 0, end.x, end.y].join(" ");
+  }
+
+  function macroCalories(item){
+    const g = Number(item.grams||0);
+    if(item.key === "Fat") return g * 9;
+    return g * 4;
+  }
+
+  
+  function renderLegend(items, totalCal){
+    const el = document.getElementById("legend");
+    if(!el) return;
+    el.innerHTML = "";
+
+    items.forEach(it=>{
+      const cal = macroCalories(it);
+      const pct = totalCal ? Math.round((cal/totalCal)*100) : 0;
+
+      const canAdjust = (it.key === "Carbs" || it.key === "Fat");
+      const grams = Math.round(Number(it.grams||0));
+      const minG = 0;
+      // Dynamic max so full-right = other macro hits 0
+      const { cico, wt } = getCicoAndWeight();
+      const proteinG = wt ? Math.round(wt) : 0;
+      const remainingCal = cico ? Math.max(0, cico - (proteinG * 4)) : 0;
+      const maxG = (it.key === "Fat")
+        ? Math.floor(remainingCal / 9)
+        : Math.floor(remainingCal / 4);
+
+      const ctrl = canAdjust ? `
+        <div class="macroCtrl" data-key="${it.key}">
+          <button class="macroStep" type="button" data-key="${it.key}" data-delta="-5">−</button>
+          <input class="macroRange" data-key="${it.key}" type="range" min="${minG}" max="${maxG}" step="5" value="${clampNum(grams, minG, maxG)}">
+          <input class="macroNum" data-key="${it.key}" type="number" min="${minG}" max="${maxG}" step="1" value="${clampNum(grams, minG, maxG)}">
+          <span class="unit">g</span>
+          <button class="macroStep" type="button" data-key="${it.key}" data-delta="5">+</button>
+        </div>
+      ` : "";
+
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `
+        <div>
+          <div class="k"><span class="sw" style="background:${it.color}"></span>${it.key}</div>
+          <div class="meta">${grams} g • ${Math.round(cal)} cal</div>
+          ${ctrl}
+        </div>
+        <div class="val">
+          ${pct}%<small>of total</small>
+        </div>
+      `;
+      el.appendChild(row);
+
+      if(canAdjust){
+        const range = row.querySelector(".macroRange");
+        const num = row.querySelector(".macroNum");
+        const steps = row.querySelectorAll(".macroStep");
+
+        function setG(next){
+          const g = clampNum(next, minG, maxG);
+          const balanced = setMacroOverrideBalanced(it.key, g);
+          syncMacroControls(balanced);
+          if(typeof renderDonut === "function"){
+            renderDonut();
+          }
+        }
+
+        range.addEventListener("input", (e)=>{
+          const g = clampNum(e.target.value, minG, maxG);
+          if(num) num.value = g;
+          setG(g);
+        });
+
+        num.addEventListener("input", (e)=>{
+          const g = clampNum(e.target.value, minG, maxG);
+          if(range) range.value = g;
+          setG(g);
+        });
+
+        steps.forEach(btn=>{
+          btn.addEventListener("click", ()=>{
+            const delta = Number(btn.getAttribute("data-delta") || 0);
+            const base = Number(num ? num.value : range.value);
+            const g = clampNum(base + delta, minG, maxG);
+            if(num) num.value = g;
+            if(range) range.value = g;
+            setG(g);
+          });
+        });
+      }
+    });
+  }
+
+
+  function attachTooltip(path, info){
+    const wrap = document.getElementById("donutWrap");
+    const tip = document.getElementById("tip");
+    const tipDot = document.getElementById("tipDot");
+    const tipTitle = document.getElementById("tipTitle");
+    const tipG = document.getElementById("tipG");
+    const tipC = document.getElementById("tipC");
+    const tipP = document.getElementById("tipP");
+    const tipE = document.getElementById("tipE");
+    const tipList = document.getElementById("tipList");
+
+    if(!wrap || !tip) return;
+
+    function show(e){
+      tip.classList.add("show");
+      tip.setAttribute("aria-hidden","false");
+      tipDot.style.background = info.color;
+      tipTitle.textContent = info.key;
+      tipG.textContent = `${info.grams} g`;
+      tipC.textContent = `${info.cal} cal`;
+      tipP.textContent = `${info.pct}%`;
+
+      const ex = (FOOD_EXAMPLES && FOOD_EXAMPLES[info.key]) ? FOOD_EXAMPLES[info.key] : [];
+      tipE.textContent = ex.length ? `${Math.min(ex.length, 8)} shown` : "—";
+      tipList.innerHTML = "";
+      if(ex.length){
+        const row = document.createElement("div");
+        row.className = "tipListRow";
+        ex.slice(0,8).forEach(name=>{
+          const chip = document.createElement("span");
+          chip.className = "tipChip";
+          chip.textContent = name;
+          row.appendChild(chip);
+        });
+        tipList.appendChild(row);
+      }
+      move(e);
+    }
+    function move(e){
+      const rect = wrap.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      tip.style.left = `${x}px`;
+      tip.style.top  = `${y}px`;
+    }
+    function hide(){
+      tip.classList.remove("show");
+      tip.setAttribute("aria-hidden","true");
+      tipList.innerHTML = "";
+    }
+
+    path.addEventListener("mouseenter", show);
+    path.addEventListener("mousemove", move);
+    path.addEventListener("mouseleave", hide);
+  }
+
+  function makeSliceGradient(defs, id, base){
+    // Solid colors (no gradients)
+    return base;
+  }
+
+  function setHoverVector(path, midAngleDeg, distPx){
+    const rad = (midAngleDeg - 90) * Math.PI / 180;
+    const dx = Math.cos(rad) * distPx;
+    const dy = Math.sin(rad) * distPx;
+    path.style.setProperty("--dx", `${dx.toFixed(1)}px`);
+    path.style.setProperty("--dy", `${dy.toFixed(1)}px`);
+  }
+
+  function renderDonut(){
+    const svg = document.getElementById("donut");
+    if(!svg) return;
+
+    const qs = new URLSearchParams(location.search);
+    const exporting = qs.get("export") === "1";
+
+    const items = getMacroDataFromReport();
+
+    const { cico } = getCicoAndWeight();
+    const sumCal = items.reduce((s,it)=>s+macroCalories(it),0) || 1;
+    const totalCal = (cico && Number.isFinite(cico)) ? cico : sumCal;
+    const calEl = document.getElementById("cal");
+    const subEl = document.getElementById("sub");
+    if(calEl) calEl.textContent = `${Math.round(totalCal)} cal`;
+    if(subEl) subEl.textContent = "Macro targets";
+
+    renderLegend(items, totalCal);
+    svg.innerHTML = "";
+
+    const cx=100, cy=100, r=78, thickness=26;
+
+    const defs = document.createElementNS("http://www.w3.org/2000/svg","defs");
+    svg.appendChild(defs);
+
+    const bg = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    bg.setAttribute("cx",cx); bg.setAttribute("cy",cy); bg.setAttribute("r",r);
+    bg.setAttribute("fill","none");
+    bg.setAttribute("stroke","rgba(255,255,255,.10)");
+    bg.setAttribute("stroke-width",thickness);
+    svg.appendChild(bg);
+
+    let angle = 0;
+    const hoverDist = 6;
+
+    items.forEach((it, idx)=>{
+      const cal = macroCalories(it);
+      const slice = 360 * (cal/totalCal);
+      const pct = Math.round((cal/totalCal)*100);
+      const mid = angle + (slice/2);
+
+      const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+      path.setAttribute("d", describeArc(cx, cy, r, angle, angle+slice));
+      path.setAttribute("fill","none");
+      path.setAttribute("stroke-width", thickness);
+      path.setAttribute("stroke-linecap","butt");
+      path.setAttribute("stroke", makeSliceGradient(defs, `g${idx}`, it.color));
+
+      path.classList.add("sliceHover");
+      setHoverVector(path, mid, hoverDist);
+      attachTooltip(path, { key: it.key, grams: it.grams, cal, pct, color: it.color });
+
+      if(!exporting){
+        path.classList.add("slice");
+        path.style.setProperty("--delay", `${idx * 80}ms`);
+        svg.appendChild(path);
+        const len = path.getTotalLength();
+        path.style.setProperty("--dash", `${len}`);
+        path.getBoundingClientRect();
+      }else{
+        svg.appendChild(path);
+        path.style.strokeDashoffset = 0;
+      }
+
+      angle += slice;
+    });
+
+    const hole = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    hole.setAttribute("cx",cx); hole.setAttribute("cy",cy); hole.setAttribute("r",r-thickness-10);
+    hole.setAttribute("fill","rgba(15,17,22,1)");
+    svg.appendChild(hole);
+
+    const innerStroke = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    innerStroke.setAttribute("cx",cx); innerStroke.setAttribute("cy",cy); innerStroke.setAttribute("r",r-thickness-10);
+    innerStroke.setAttribute("fill","none");
+    innerStroke.setAttribute("stroke","rgba(255,255,255,.08)");
+    innerStroke.setAttribute("stroke-width","2");
+    svg.appendChild(innerStroke);
+  }
+
+
+    // ----- Bars (DIV) -----
+    
+    // ----- Bars (Grouped DIV) -----
+    
+
+function normalizeBarsInput(b){
+  // Supports:
+  // 1) {labels:[...], prev:[...], curr:[...]}  (legacy)
+  // 2) {metrics:[{label, prev, curr}, ...]}   (recommended)
+  // 3) {values:{ "Weight":{prev,curr}, ... }} (supported)
+  if(!b) return { labels:[], prev:[], curr:[] };
+
+  let labels = [];
+  let prev = [];
+  let curr = [];
+
+  if(Array.isArray(b.metrics)){
+    b.metrics.forEach(m=>{
+      labels.push(String(m.label ?? m.name ?? ""));
+      prev.push(Number(m.prev ?? m.prev ?? 0));
+      curr.push(Number(m.curr ?? m.new ?? 0));
+    });
+  }else if(b.values && typeof b.values === "object"){
+    Object.keys(b.values).forEach(k=>{
+      const v = b.values[k] || {};
+      labels.push(String(k));
+      prev.push(Number(v.prev ?? v.prev ?? 0));
+      curr.push(Number(v.curr ?? v.new ?? 0));
+    });
+  }else{
+    labels = (b.labels || []).map(x=>String(x));
+    prev = (b.prev || []).map(v=>Number(v||0));
+    curr = (b.curr || []).map(v=>Number(v||0));
+  }
+
+  // Normalize label variants
+  labels = labels.map(l=>{
+    const s = String(l||"").trim();
+    if(/^daily\s*cal(orie)?\s*goal$/i.test(s)) return "CICO Goal";
+    if(/^daily\s*caloric\s*intake$/i.test(s)) return "CICO Goal";
+    if(/^daily\s*cal\s*goal$/i.test(s)) return "CICO Goal";
+    return s;
+  });
+
+  // Heuristic auto-fix for common order mismatch:
+  // If TDEE/CICO contain tiny values while Pull/Push contain huge values, swap those pairs.
+  const idx = (name)=> labels.findIndex(x=>x === name);
+
+  const tdee = idx("TDEE");
+  const cico = idx("CICO Goal");
+  const pull = idx("Pull-Ups");
+  const push = idx("Push-Ups");
+
+  const swap = (i,j)=>{
+    if(i<0 || j<0) return;
+    const tp = prev[i]; prev[i]=prev[j]; prev[j]=tp;
+    const tc = curr[i]; curr[i]=curr[j]; curr[j]=tc;
+  };
+
+  if(tdee>=0 && pull>=0 && prev[tdee] < 100 && prev[pull] > 100){
+    swap(tdee, pull);
+  }
+  if(cico>=0 && push>=0 && prev[cico] < 100 && prev[push] > 100){
+    swap(cico, push);
+  }
+
+  return { labels, prev, curr };
+}
+
+function renderBars(){
+	  const BAR_COLOR_PAIRS = [
+          ["#c62828", "#ef5350"], // red (prev darker → curr lighter)
+          ["#ef6c00", "#ffa726"], // orange
+          ["#f9a825", "#fff176"], // yellow
+          ["#2e7d32", "#66bb6a"], // green
+          ["#0277bd", "#4fc3f7"], // blue
+          ["#6a1b9a", "#b39ddb"]  // purple
+      ];
+		
+      const host = document.getElementById("chart-bars");
+      if(!host) return;
+
+      const bRaw = (window.REPORT_DATA && window.REPORT_DATA.bars) || {labels:[], prev:[], curr:[]};
+      const bNorm = normalizeBarsInput(bRaw);
+      const labels = bNorm.labels || [];
+      const prev = (bNorm.prev || []).map(v=>Number(v||0));
+      const curr = (bNorm.curr || []).map(v=>Number(v||0));
+
+      host.innerHTML = "";
+      host.style.display = "flex";
+      host.style.alignItems = "flex-end";
+	  host.style.justifyContent = "space-between"; // evenly distribute groups
+	  host.style.gap = "12px";                  // tighter & consistent
+	  host.style.padding = "18px 14px";
+      host.style.height = "260px";
+
+      // ---- Hover tooltip for bars (like macro slices) ----
+      let barTip = host.querySelector(".barTip");
+      if(!barTip){
+        barTip = document.createElement("div");
+        barTip.className = "barTip";
+        barTip.innerHTML = `
+          <div class="barTipInner">
+            <div class="barTipTitle"><span class="barTipDot"></span><span class="barTipName">—</span></div>
+            <div class="barTipLine"><span>Value</span><b class="barTipVal">—</b></div>
+            <div class="barTipDesc" style="margin-top:6px; font-size:11.5px; color: rgba(255,255,255,.68); font-weight:800;">—</div>
+          </div>
+        `;
+        host.appendChild(barTip);
+      }
+      const barTipDot  = barTip.querySelector(".barTipDot");
+      const barTipName = barTip.querySelector(".barTipName");
+      const barTipVal  = barTip.querySelector(".barTipVal");
+      const barTipDesc = barTip.querySelector(".barTipDesc");
+      function showBarTip(e, info){
+        barTip.classList.add("show");
+        barTip.setAttribute("aria-hidden","false");
+        if(barTipDot)  barTipDot.style.background = info.color || "#fff";
+        if(barTipName) barTipName.textContent = `${info.label} — ${info.series}`;
+        if(barTipVal)  barTipVal.textContent = String(info.value);
+
+        // Metric explainer (only for certain labels)
+        if(barTipDesc){
+          const EXPLAIN = {
+            "TDEE": "Total Daily Energy Expenditure",
+            "CICO Goal": "Calories in, calories out goal"
+          };
+          const msg = EXPLAIN[info.label] || "";
+          if(msg){
+            barTipDesc.style.display = "block";
+            barTipDesc.textContent = msg;
+          }else{
+            barTipDesc.style.display = "none";
+          }
+        }
+        moveBarTip(e);
+
+      }
+      function moveBarTip(e){
+        const rect = host.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        barTip.style.left = `${x}px`;
+        barTip.style.top  = `${y}px`;
+      }
+      function hideBarTip(){
+        barTip.classList.remove("show");
+        barTip.setAttribute("aria-hidden","true");
+      }
+
+      function attachBarTip(el, info){
+        el.addEventListener("mouseenter", (e)=>showBarTip(e, info));
+        el.addEventListener("mousemove",  (e)=>moveBarTip(e));
+        el.addEventListener("mouseleave", ()=>hideBarTip());
+        el.addEventListener("focus",      (e)=>showBarTip(e, info));
+        el.addEventListener("blur",       ()=>hideBarTip());
+      }
+
+
+      const MIN_H = 42;   // minimum visible bar height (non-zero)
+      const MAX_H = 180;  // max bar height
+// Metric-specific colors (previous = darker shade, current = lighter shade)
+      
+	  const METRIC_COLORS = {
+	    "Weight":         { prev:"#c62828", curr:"#ef5350" }, // red
+	    "Bodyfat %":      { prev:"#ef6c00", curr:"#ffa726" }, // orange
+	    "TDEE":           { prev:"#f9a825", curr:"#fff176" }, // yellow
+	    "CICO Goal": { prev:"#2e7d32", curr:"#66bb6a" }, // green
+	    "Pull-Ups":       { prev:"#0277bd", curr:"#4fc3f7" }, // blue
+	    "Push-Ups":       { prev:"#6a1b9a", curr:"#b39ddb" }  // purple
+	  };
+      
+
+      const FALLBACK = { prev: "var(--red)", curr: "var(--green)" };
+
+      for(let i=0;i<labels.length;i++){
+        const labelRaw = labels[i] || "";
+        const label = (/^daily\s+cal(or(ie)?)?\s+goal$/i.test(labelRaw) || /^daily\s+caloric\s+intake$/i.test(labelRaw)) ? "CICO Goal" : labelRaw;
+
+        const group = document.createElement("div");
+		group.style.flex = "1 1 0";     // equal-width columns for perfect alignment
+		group.style.minWidth = "0";
+        group.style.display = "flex";
+        group.style.flexDirection = "column";
+        group.style.alignItems = "center";
+        group.style.gap = "10px";
+
+        const barsRow = document.createElement("div");
+        barsRow.style.display = "flex";
+
+        const p = Number(prev[i]||0);
+        const c = Number(curr[i]||0);
+        const delta = c - p;
+        const pct = (p === 0) ? ((c === 0) ? 0 : null) : ((delta / Math.abs(p)) * 100);
+
+        // Per-metric "what is good?" map (edit anytime)
+        const GOOD_DIR = {
+          "Bodyfat %": "down",
+          "Pull-Ups": "up",
+          "Push-Ups": "up",
+          // "Weight": "down",            // optional: emphasize weight loss
+          // "TDEE": "up",               // optional: higher TDEE often good
+          // "CICO Goal": "up"  // optional: depends on phase
+        };
+        const goodDir = GOOD_DIR[labels[i]] || "neutral";
+
+        const arrow = (pct === null) ? "→" : (delta > 0 ? "▲" : (delta < 0 ? "▼" : "→"));
+        let trendClass = "trend-neutral";
+        if(pct === null){
+          trendClass = "trend-neutral";
+        } else if(goodDir === "up"){
+          trendClass = (delta >= 0) ? "trend-good" : "trend-bad";
+        } else if(goodDir === "down"){
+          trendClass = (delta <= 0) ? "trend-good" : "trend-bad";
+        } else {
+          trendClass = "trend-neutral";
+        }
+
+        const pctEl = document.createElement("div");
+        pctEl.style.fontSize = "11px";
+        pctEl.style.letterSpacing = ".02em";
+        pctEl.style.fontWeight = "800";
+        pctEl.style.marginBottom = "6px";
+        pctEl.style.textAlign = "center";
+        pctEl.style.minHeight = "14px";
+        pctEl.className = trendClass;
+        pctEl.textContent = (pct === null)
+          ? `${arrow} N/A % change`
+          : `${arrow} ${pct >= 0 ? "+" : ""}${pct.toFixed(1)}% change`;
+
+
+        barsRow.style.alignItems = "flex-end";
+        barsRow.style.gap = "8px";
+        barsRow.style.height = "180px";
+
+        function makeBar(val, color, localMax, metricLabel, seriesLabel){
+          const bar = document.createElement("div");
+          const v = Number(val||0);
+          const m = Math.max(0, Number(localMax||0));
+          let h = 0;
+          if(v > 0 && m > 0){
+            // Scale within each metric so comparisons are visually readable without a y-axis
+            h = MIN_H + Math.round((v/m) * (MAX_H - MIN_H));
+          } else {
+            h = 0;
+          }
+          bar.style.width = "14px";
+          bar.style.height = h + "px";
+          bar.style.borderRadius = "4px";
+          bar.style.background = color;
+          bar.style.boxShadow = "0 10px 25px rgba(0,0,0,.25)";
+          bar.style.border = "1px solid rgba(255,255,255,.08)";
+
+          bar.classList.add("bar");
+                    // Ensure animation CSS can target prev vs new bars
+          if((seriesLabel||"").toLowerCase()==="prev") bar.classList.add("bar-prev");
+          if((seriesLabel||"").toLowerCase()==="new")  bar.classList.add("bar-curr");
+bar.setAttribute("tabindex","0");
+          // attach hover tooltip
+          attachBarTip(bar, {
+            label: metricLabel || "",
+            series: seriesLabel || "",
+            value: v,
+            color: color
+          });
+
+          return bar;
+        }
+
+		const [prevColor, currColor] = BAR_COLOR_PAIRS[i] || ["#999", "#ccc"];
+
+		const localMax = Math.max(1, prev[i]||0, curr[i]||0);
+		const barPrev = makeBar(prev[i], prevColor, localMax, label, "Prev");
+		const barCurr = makeBar(curr[i], currColor, localMax, label, "New");
+        
+
+        // tooltips (simple title attr)
+        barPrev.title = `${label} — Prev: ${prev[i]}`;
+        barCurr.title = `${label} — New: ${curr[i]}`;
+
+        barsRow.appendChild(barPrev);
+        barsRow.appendChild(barCurr);
+
+        const lbl = document.createElement("div");
+        lbl.textContent = label;
+        lbl.style.fontSize = "12px";
+        lbl.style.textAlign = "center";
+        lbl.style.maxWidth = "86px";
+        lbl.style.lineHeight = "1.1";
+        lbl.style.opacity = ".95";
+
+        group.appendChild(pctEl);
+        group.appendChild(barsRow);
+        group.appendChild(lbl);
+        host.appendChild(group);
+      }
+    }
+
+
+        // ----- Bottom-left: Macro Compare (Prev vs New grams) -----
+    function renderMacroCompare(){
+      const host = document.getElementById("macro-compare");
+      if(!host) return;
+
+      const t = (window.REPORT_DATA && window.REPORT_DATA.tokens) || {};
+      const mc = (window.REPORT_DATA && window.REPORT_DATA.macroCompare) || null;
+
+      function numFromToken(v){
+        if(v === undefined || v === null) return 0;
+        const m = String(v).match(/-?\d+(\.\d+)?/);
+        return m ? Number(m[0]) : 0;
+      }
+
+      const data = [
+        {
+          name: "Protein",
+          color: "#2e7d32",
+          prev: mc ? Number(mc.protein_prev||0) : numFromToken(t.ROW_1_MID),
+          neu: mc ? Number(mc.protein_new||0) : numFromToken(t.ROW_1_VALUE),
+        },
+        {
+          name: "Carbs",
+          color: "#fbc02d",
+          prev: mc ? Number(mc.carbs_prev||0) : numFromToken(t.ROW_2_MID),
+          neu: mc ? Number(mc.carbs_new||0) : numFromToken(t.ROW_2_VALUE),
+        },
+        {
+          name: "Fats",
+          color: "#ff4f73",
+          prev: mc ? Number(mc.fats_prev||0) : numFromToken(t.ROW_3_MID),
+          neu: mc ? Number(mc.fats_new||0) : numFromToken(t.ROW_3_VALUE),
+        },
+      ];
+
+      const maxV = Math.max(1, ...data.flatMap(d=>[d.prev, d.neu]).map(v=>Number(v)||0));
+      host.querySelectorAll(".mc-row").forEach(n=>n.remove());
+
+      data.forEach(d=>{
+        const row = document.createElement("div");
+        row.className = "mc-row";
+
+        const name = document.createElement("div");
+        name.className = "mc-name";
+        name.textContent = d.name;
+
+        const bars = document.createElement("div");
+        bars.className = "mc-bars";
+
+        function barLine(tag, val, cls){
+          const wrap = document.createElement("div");
+          wrap.className = "mc-barwrap";
+
+          const tg = document.createElement("div");
+          tg.className = "mc-tag";
+          tg.textContent = tag;
+
+          const track = document.createElement("div");
+          track.className = "mc-track";
+
+          const fill = document.createElement("div");
+          fill.className = "mc-fill " + cls;
+          fill.style.background = d.color;
+          fill.style.width = `${Math.max(0, Math.min(100, (Number(val||0)/maxV)*100))}%`;
+
+          track.appendChild(fill);
+
+          const valEl = document.createElement("div");
+          valEl.className = "mc-val";
+          valEl.textContent = `${Math.round(Number(val||0))} g`;
+
+          wrap.appendChild(tg);
+          wrap.appendChild(track);
+          wrap.appendChild(valEl);
+          return wrap;
+        }
+
+        bars.appendChild(barLine("Prev", d.prev, "old"));
+        bars.appendChild(barLine("New", d.neu, "new"));
+
+        const delta = Number(d.neu||0) - Number(d.prev||0);
+        const pct = (Number(d.prev||0) === 0) ? null : (delta / Math.abs(Number(d.prev||0))) * 100;
+        const deltaEl = document.createElement("div");
+        deltaEl.className = "mc-delta " + (delta > 0 ? "good" : (delta < 0 ? "bad" : ""));
+        deltaEl.textContent = (pct === null)
+          ? `${delta >= 0 ? "+" : ""}${Math.round(delta)} g`
+          : `${delta >= 0 ? "+" : ""}${Math.round(delta)} g (${delta >= 0 ? "+" : ""}${pct.toFixed(1)}%)`;
+
+        row.appendChild(name);
+        row.appendChild(bars);
+        row.appendChild(deltaEl);
+
+        host.appendChild(row);
+      });
+    }
+
+
+    // ----- Recomp Summary: bind tiles directly to the same bars data used by "Composition Changes" -----
+    function _normKey(s){
+      return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"").trim();
+    }
+    function _findLabelIndex(labels, candidates){
+      const map = {};
+      for(let i=0;i<(labels||[]).length;i++){
+        map[_normKey(labels[i])] = i;
+      }
+      for(const c of (candidates||[])){
+        const k = _normKey(c);
+        if(k in map) return map[k];
+      }
+      return -1;
+    }
+    function _fmtNum(x, opts){
+      const n = Number(x);
+      if(!isFinite(n)) return "—";
+      const dec = (opts && opts.decimals !== undefined) ? opts.decimals : 0;
+      try{
+        return n.toLocaleString(undefined, {minimumFractionDigits: dec, maximumFractionDigits: dec});
+      }catch(e){
+        return String(dec ? n.toFixed(dec) : Math.round(n));
+      }
+    }
+    function _setRecompTileValue(tileKeyText, valueText){
+      const root = document.querySelector(".recomp-summary");
+      if(!root) return;
+      const tiles = Array.from(root.querySelectorAll(".recomp-kpi"));
+      const want = _normKey(tileKeyText);
+      for(const t of tiles){
+        const kEl = t.querySelector(".k");
+        const vEl = t.querySelector(".v");
+        if(!kEl || !vEl) continue;
+        if(_normKey(kEl.textContent) === want){
+          vEl.textContent = valueText;
+          return;
+        }
+      }
+    }
+    function renderRecompFromBars(){
+      if(!window.REPORT_DATA || !window.REPORT_DATA.bars) return;
+
+      const bNorm = normalizeBarsInput(window.REPORT_DATA.bars);
+      const labels = bNorm.labels || [];
+      const prev = bNorm.prev || [];
+      const curr = bNorm.curr || [];
+
+      // These MUST match the "Composition Changes" source-of-truth (bars.curr)
+      const idxWeight = _findLabelIndex(labels, ["Weight"]);
+      const idxTdee   = _findLabelIndex(labels, ["TDEE"]);
+      const idxCico   = _findLabelIndex(labels, ["CICO Goal","Daily Calorie Goal","Daily Caloric Intake","Daily Calorie Intake","CICO"]);
+
+      // Recomp metrics (Fat change / Lean mass / Strength)
+      // Prefer values computed in Python (build_report.py) if present, otherwise compute here.
+      const r = (window.REPORT_DATA && window.REPORT_DATA.recomp) ? window.REPORT_DATA.recomp : null;
+
+      const idxBf   = _findLabelIndex(labels, ["Bodyfat %","Body Fat %","Bodyfat","Body Fat"]);
+      const idxPull = _findLabelIndex(labels, ["Pull-Ups","Pullups","Pull Ups"]);
+      const idxPush = _findLabelIndex(labels, ["Push-Ups","Pushups","Push Ups"]);
+
+      function _fmtSignedLb(x){
+        const n = Number(x || 0);
+        const sign = (n > 0) ? "+" : ""; // negative already has '-'
+        return sign + _fmtNum(n, {decimals:1}) + " lb";
+      }
+      function _fmtSignedPct(x){
+        const n = Number(x || 0);
+        const sign = (n > 0) ? "+" : "";
+        return sign + _fmtNum(n, {decimals:0}) + "%";
+      }
+      function _pctChange(a,b){
+        const aa = Number(a||0), bb = Number(b||0);
+        const denom = Math.max(Math.abs(aa), 1);
+        return ((bb - aa) / denom) * 100;
+      }
+
+      if(r){
+        if(r.fat_change_lb !== undefined)  _setRecompTileValue("Fat change", _fmtSignedLb(r.fat_change_lb));
+        if(r.lean_change_lb !== undefined) _setRecompTileValue("Lean mass", _fmtSignedLb(r.lean_change_lb));
+        if(r.strength_pct !== undefined)   _setRecompTileValue("Strength", _fmtSignedPct(r.strength_pct));
+      } else {
+        // Compute from bars (fat + lean use weight + bf%, strength uses pull/push % change)
+        const wtPrev = (idxWeight>=0) ? Number(prev[idxWeight]||0) : 0;
+        const wtCurr = (idxWeight>=0) ? Number(curr[idxWeight]||0) : 0;
+        const bfPrev = (idxBf>=0) ? Number(prev[idxBf]||0) : 0;
+        const bfCurr = (idxBf>=0) ? Number(curr[idxBf]||0) : 0;
+
+        const fatPrev = wtPrev * (bfPrev/100);
+        const fatCurr = wtCurr * (bfCurr/100);
+        const fatChange = (fatCurr - fatPrev);
+        const leanPrev = Math.max(wtPrev - fatPrev, 0);
+        const leanCurr = Math.max(wtCurr - fatCurr, 0);
+        const leanChange = (leanCurr - leanPrev);
+
+        const pPull = (idxPull>=0) ? _pctChange(prev[idxPull], curr[idxPull]) : null;
+        const pPush = (idxPush>=0) ? _pctChange(prev[idxPush], curr[idxPush]) : null;
+        const pctVals = [pPull, pPush].filter(v => v !== null && v !== undefined && !Number.isNaN(v));
+        const strength = pctVals.length ? (pctVals.reduce((a,b)=>a+b,0) / pctVals.length) : 0;
+
+        _setRecompTileValue("Fat change", _fmtSignedLb(fatChange));
+        _setRecompTileValue("Lean mass", _fmtSignedLb(leanChange));
+        _setRecompTileValue("Strength", _fmtSignedPct(strength));
+      }
+
+
+      if(idxCico >= 0)   _setRecompTileValue("Calorie goal", _fmtNum(curr[idxCico], {decimals:0}));
+      if(idxWeight >= 0) _setRecompTileValue("Weight", _fmtNum(curr[idxWeight], {decimals: (Math.abs(Number(curr[idxWeight]))%1>0)?1:0 }));
+      if(idxTdee >= 0)   _setRecompTileValue("TDEE", _fmtNum(curr[idxTdee], {decimals:0}));
+
+      // Daily steps comes from GUI-saved field (not in bars by default)
+      const steps = (window.REPORT_DATA.dailySteps ?? window.REPORT_DATA.steps ?? window.REPORT_DATA.body?.steps ?? window.REPORT_DATA.tokens?.DAILY_STEPS);
+      if(steps !== undefined && steps !== null && String(steps).trim() !== ""){
+        const stepNum = String(steps).replace(/[^\d.-]/g,"");
+        _setRecompTileValue("Daily steps", _fmtNum(stepNum, {decimals:0}));
+      }
+    }
+
+
+applyTokens();
+    renderDonut();
+    renderBars("chart-bars");
+  if(document.getElementById("chart-bars-bl")) renderBars("chart-bars-bl");
+    renderMacroCompare();
+    renderRecompFromBars();
+
+// populate inverted comparison table (Prev/New as rows, metrics as columns)
+(function(){
+  const headRow = document.getElementById("comp-table-head-row");
+  const rowOld  = document.getElementById("comp-row-prev");
+  const rowNew  = document.getElementById("comp-row-new");
+  if(!headRow || !rowOld || !rowNew || !window.REPORT_DATA?.bars) return;
+
+  const bRaw = window.REPORT_DATA.bars;
+  const bNorm = normalizeBarsInput(bRaw);
+  const labels = bNorm.labels || [];
+  const prev = bNorm.prev || [];
+  const curr = bNorm.curr || [];
+
+  const table = headRow.closest("table");
+  if(table) table.style.setProperty("--comp-cols", String(Math.max(1, labels.length)));
+
+  // reset (in case of hot reload)
+  headRow.innerHTML = "";
+  rowOld.innerHTML = "";
+  rowNew.innerHTML = "";
+
+  for(let i=0;i<labels.length;i++){
+        const labelRaw = labels[i] || "";
+        const label = (/^daily\s+cal(or(ie)?)?\s+goal$/i.test(labelRaw) || /^daily\s+caloric\s+intake$/i.test(labelRaw)) ? "CICO Goal" : labelRaw;
+
+    const th = document.createElement("th");
+    const headerRaw = labels[i] || "";
+    const header = (/^daily\s+cal(or(ie)?)?\s+goal$/i.test(headerRaw) || /^daily\s+caloric\s+intake$/i.test(headerRaw)) ? "CICO Goal" : headerRaw;
+    th.textContent = header;
+    headRow.appendChild(th);
+
+    const tdOld = document.createElement("td");
+    tdOld.className = "prev";
+    tdOld.textContent = prev[i];
+    rowOld.appendChild(tdOld);
+
+    const tdNew = document.createElement("td");
+    tdNew.className = "curr";
+    tdNew.textContent = curr[i];
+    rowNew.appendChild(tdNew);
+  }
+})();
+
+// wait a tick so the line container has final width/height
+    
+  // ---------- Goal Timeline (replaces prev undefined renderLines) ----------
+  
+  function renderLines(){
+    const host = document.getElementById("chart-line");
+    if(!host) return;
+
+    const gt = (window.REPORT_DATA && window.REPORT_DATA.goalTimeline) ? window.REPORT_DATA.goalTimeline : {};
+
+    // Inputs / fallbacks
+    const startWeight = Number(gt.startWeight ?? window.REPORT_DATA?.body?.startWeight ?? 187);
+    const goalWeight  = Number(gt.goalWeight  ?? window.REPORT_DATA?.body?.goalWeight  ?? 177);
+
+    // "Realistic" pace (lb/week)
+    const realRate = Number(gt.realRateLbPerWeek ?? gt.rateLbPerWeek ?? 0.8);
+
+    // "Optimized" pace (lb/week) – if not provided, assume ~35% faster
+    const optRate  = Number(gt.optimizedRateLbPerWeek ?? (realRate * 1.35));
+
+    // Progress (0..1) — where "you are here" sits on the x-axis
+    const progress = Math.max(0, Math.min(1, Number(gt.progressPct ?? 0.35)));
+
+    // Weeks to goal (rough)
+    const totalDelta = Math.abs(goalWeight - startWeight);
+    const weeksReal  = Math.max(1, Math.ceil(totalDelta / Math.max(0.1, realRate)));
+    const weeksOpt   = Math.max(1, Math.ceil(totalDelta / Math.max(0.1, optRate)));
+
+    // Update small stat pills
+    const etaRealEl = document.getElementById("gtEtaReal");
+    const etaOptEl  = document.getElementById("gtEtaOpt");
+    if(etaRealEl) etaRealEl.textContent = `${weeksReal} wks`;
+    if(etaOptEl)  etaOptEl.textContent  = `${weeksOpt} wks`;
+
+    // SVG layout
+    const W = 900, H = 420;
+
+    const yTickVals = gt.yTicks ?? [190, 187, 184, 181, 178, 172];
+
+    const minY = Math.min(...yTickVals, startWeight, goalWeight) - 1;
+    const maxY = Math.max(...yTickVals, startWeight, goalWeight) + 1;
+
+    const xFor = (t)=> (t * W);
+    const yFor = (val)=> {
+      const p = (val - minY) / (maxY - minY);
+      return H - (p * H);
+    };
+
+    const ms = [0, .25, .50, .75, 1];
+    const interp = (p)=> startWeight + (goalWeight - startWeight) * p;
+
+    const ptsReal = ms.map(p => ({ x:xFor(p), y:yFor(interp(p)) }));
+    const ptsOpt  = ms.map(p => {
+      const speedup = Math.max(1.05, optRate / Math.max(0.1, realRate));
+      const p2 = Math.min(1, p * speedup);
+      return ({ x:xFor(p), y:yFor(interp(p2)) });
+    });
+
+    const pathD = (pts)=> pts.map((p,i)=> `${i===0?"M":"L"} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(" ");
+
+    const lineRealD = pathD(ptsReal);
+    const lineOptD  = pathD(ptsOpt);
+
+    const areaD = `${lineRealD} L ${xFor(1).toFixed(2)} ${H.toFixed(2)} L 0 ${H.toFixed(2)} Z`;
+
+    const nowY = yFor(interp(progress));
+    const nowX = xFor(progress);
+
+    const svg = `
+      <svg viewBox="0 0 1080 620" width="100%" height="100%" role="img" aria-label="Goal timeline">
+        <defs>
+          <linearGradient id="gtLineGradReal" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"  stop-color="rgba(101,214,205,1)"/>
+            <stop offset="15%" stop-color="rgba(101,214,205,1)"/>
+            <stop offset="16%" stop-color="rgba(242,162,59,1)"/>
+            <stop offset="100%" stop-color="rgba(242,162,59,1)"/>
+          </linearGradient>
+
+          <linearGradient id="gtLineGradOpt" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"  stop-color="rgba(160,120,255,1)"/>
+            <stop offset="100%" stop-color="rgba(60,190,255,1)"/>
+          </linearGradient>
+
+          <linearGradient id="gtFillGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stop-color="rgba(101,214,205,.55)"/>
+            <stop offset="30%" stop-color="rgba(101,214,205,.30)"/>
+            <stop offset="42%" stop-color="rgba(101,214,205,.14)"/>
+            <stop offset="52%" stop-color="rgba(101,214,205,.05)"/>
+            <stop offset="65%" stop-color="rgba(101,214,205,0)"/>
+          </linearGradient>
+        </defs>
+
+        <g transform="translate(90,70)">
+          <g>
+            ${[0,1,2,3,4].map(r=>{
+              const y = (H*(r/4)).toFixed(2);
+              return `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="rgba(255,255,255,.08)" stroke-width="1"/>`;
+            }).join("")}
+            ${Array.from({length:11}).map((_,c)=>{
+              const x = (W*(c/10)).toFixed(2);
+              return `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="rgba(255,255,255,.05)" stroke-width="1"/>`;
+            }).join("")}
+          </g>
+
+          <g>
+            ${yTickVals.map(v=>{
+              const y = (yFor(Number(v))+8).toFixed(2);
+              return `<text x="-28" y="${y}" text-anchor="end" fill="rgba(255,255,255,.58)" font-size="24" font-weight="700">${v}</text>`;
+            }).join("")}
+          </g>
+
+          <path d="${areaD}" fill="url(#gtFillGrad)"></path>
+          <path d="${lineRealD}" fill="none" stroke="url(#gtLineGradReal)" stroke-width="10" stroke-linecap="round"></path>
+
+          <path d="${lineOptD}" fill="none" stroke="url(#gtLineGradOpt)" stroke-width="8"
+                stroke-linecap="round" stroke-dasharray="14 10" opacity="0.95"></path>
+
+          ${ptsReal.map(p=>`<circle cx="${p.x.toFixed(2)}" cy="${p.y.toFixed(2)}" r="10" fill="rgba(255,255,255,.88)"></circle>`).join("")}
+
+          <line x1="${nowX.toFixed(2)}" y1="0" x2="${nowX.toFixed(2)}" y2="${H.toFixed(2)}"
+                stroke="rgba(255,255,255,.10)" stroke-width="2" />
+          <circle cx="${nowX.toFixed(2)}" cy="${nowY.toFixed(2)}" r="12"
+                  fill="rgba(255,255,255,.92)" />
+          <circle cx="${nowX.toFixed(2)}" cy="${nowY.toFixed(2)}" r="20"
+                  fill="rgba(255,255,255,.08)" />
+
+          <g>
+            ${["Start","25%","50%","75%","Goal"].map((lbl,i)=>{
+              const x = xFor(ms[i]).toFixed(2);
+              const anchor = i===0 ? "start" : (i===4 ? "end" : "middle");
+              const fill = i===4 ? "rgba(255,255,255,.88)" : "rgba(255,255,255,.62)";
+              return `<text x="${x}" y="${(H+74)}" text-anchor="${anchor}" fill="${fill}" font-size="30" font-weight="800">${lbl}</text>`;
+            }).join("")}
+          </g>
+        </g>
+      </svg>
+    `;
+
+    host.innerHTML = svg;
+  }
+
+  // ----------------------------------------------------------------------
+requestAnimationFrame(renderLines);
+    window.addEventListener("resize", ()=>requestAnimationFrame(renderLines));
+  
+
+/* ===== Dietary Changes horizontal macro bars (Prev vs New) ===== */
+(function(){
+  function fmtPct(x){
+    const s = (x>=0?"+":"") + x.toFixed(1) + "%";
+    return s;
+  }
+
+  function num(v){
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  // Pull macro grams from your *actual* REPORT_DATA shape (report-data.js)
+  // New grams are in REPORT_DATA.bar.{protein_g, carbs_g, fat_g}
+  // Prev grams: optional; we look for common keys. If missing, we fall back to New (so you still see bars).
+  function getPrevNewGrams(){
+    const RD = window.REPORT_DATA || {};
+
+    const bar = RD.bar || {};
+    const curr = [
+      num(bar.protein_g),
+      num(bar.carbs_g),
+      num(bar.fat_g),
+    ];
+
+    const prevBar =
+      RD.prev_bar ||
+      RD.prevBar  ||
+      RD.bar_prev ||
+      RD.prev     ||
+      null;
+
+    const prev = prevBar ? [
+      num(prevBar.protein_g ?? prevBar.protein),
+      num(prevBar.carbs_g   ?? prevBar.carbs),
+      num(prevBar.fat_g     ?? prevBar.fat),
+    ] : curr.slice(); // fallback: show 0% change but not blank
+
+    return { prev, curr };
+  }
+
+  function getLabelsAndColors(){
+    const RD = window.REPORT_DATA || {};
+    const m = Array.isArray(RD.macros) ? RD.macros : [];
+    const labels = [
+      String((m[0] && m[0].label) || "Protein"),
+      String((m[1] && m[1].label) || "Carbs"),
+      String((m[2] && m[2].label) || "Fat"),
+    ];
+    // Match donut slice colors EXACTLY: use REPORT_DATA.macros[i].color
+    const colors = [
+      String((m[0] && m[0].color) || "#00C2C7"),
+      String((m[1] && m[1].color) || "#FF8A00"),
+      String((m[2] && m[2].color) || "#D64B5A"),
+    ];
+    return { labels, colors };
+  }
+
+  function renderDietaryMacroBars(){
+    const host = document.getElementById("dietaryMacroBars");
+    if(!host) return;
+
+    const { prev, curr } = getPrevNewGrams();
+    const { labels, colors } = getLabelsAndColors();
+
+    host.innerHTML = "";
+
+    for(let i=0;i<3;i++){
+      const label = labels[i] || "";
+      const p = num(prev[i] || 0);
+      const c = num(curr[i] || 0);
+      const localMax = Math.max(1, p, c);
+      const color = colors[i] || "#999";
+
+      const group = document.createElement("div");
+      group.className = "hGroup";
+
+      const labelCol = document.createElement("div");
+      labelCol.className = "hLabelCol";
+      labelCol.innerHTML = `<div class="hLabel">${label}</div>`;
+
+      const barsCol = document.createElement("div");
+      barsCol.className = "hBarsCol";
+
+      const makeBar = (val, cls)=>{
+        const bar = document.createElement("div");
+        bar.className = "bar " + cls;
+
+        // Make bar length match the numeric grams relationship clearly.
+        // Scale within each macro pair: longest (prev/new) = 100% width.
+        const pct = (val > 0) ? Math.max(0, Math.min(100, (val / localMax) * 100)) : 0;
+        bar.style.setProperty("--w", pct.toFixed(1) + "%");
+        bar.style.width = pct.toFixed(1) + "%";
+
+        // SAME color as donut slice; style difference is prev vs new
+        bar.style.background = color;
+        return bar;
+      };
+
+      // PREV row
+      const prevRow = document.createElement("div");
+      prevRow.className = "barRow";
+      const prevTag = document.createElement("div");
+      prevTag.className = "tag";
+      prevTag.textContent = "Prev";
+      const prevBarEl = makeBar(p, "bar-prev");
+      const prevVal = document.createElement("div");
+      prevVal.className = "valG";
+      prevVal.textContent = Math.round(p) + " g";
+      prevRow.appendChild(prevTag);
+      prevRow.appendChild(prevBarEl);
+      prevRow.appendChild(prevVal);
+
+      // NEW row
+      const currRow = document.createElement("div");
+      currRow.className = "barRow";
+      const currTag = document.createElement("div");
+      currTag.className = "tag";
+      currTag.textContent = "New";
+      const currBarEl = makeBar(c, "bar-curr");
+      const currVal = document.createElement("div");
+      currVal.className = "valG";
+      currVal.textContent = Math.round(c) + " g";
+      currRow.appendChild(currTag);
+      currRow.appendChild(currBarEl);
+      currRow.appendChild(currVal);
+
+      barsCol.appendChild(prevRow);
+      barsCol.appendChild(currRow);
+
+      // % change
+      const pctEl = document.createElement("div");
+      const delta = c - p;
+      const pct = (p===0) ? null : (delta/Math.abs(p))*100;
+      let cls = "neutral";
+      if(pct !== null){
+        cls = delta>0 ? "good" : (delta<0 ? "bad" : "neutral");
+      }
+      const arrow = (pct===null) ? "→" : (delta>0 ? "↑" : (delta<0 ? "↓" : "→"));
+      pctEl.className = "pct " + cls;
+      pctEl.textContent = (pct===null) ? "N/A" : `${arrow} ${fmtPct(pct)}`;
+
+      group.appendChild(labelCol);
+      group.appendChild(barsCol);
+      group.appendChild(pctEl);
+      host.appendChild(group);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    try{ renderDietaryMacroBars(); }catch(e){ console.warn("Dietary macro bars render failed:", e); }
+  });
+})();
+/* ============================================================ */
+
+</script>
+
+<script>
+(function(){
+  const goal = (window.REPORT_DATA && (REPORT_DATA.goal || REPORT_DATA.tokens?.GOAL) || "").toLowerCase();
+
+  document.querySelectorAll('.recomp-kpi').forEach(kpi => {
+    const label = kpi.querySelector('.k')?.textContent.toLowerCase() || "";
+    const valEl = kpi.querySelector('.kpi-val');
+    const arrowEl = kpi.querySelector('.kpi-arrow');
+    if (!valEl || !arrowEl) return;
+
+    const txt = valEl.textContent.trim();
+    const isNegative = txt.startsWith('-');
+    let isGood = !isNegative;
+
+    // Fat logic flips based on goal
+    if (label.includes('fat')) {
+      if (goal === 'cut') {
+        isGood = isNegative;   // fat going down on cut = good
+      } else if (goal === 'gain') {
+        isGood = !isNegative; // fat going up on gain = good
+      }
+    }
+
+    arrowEl.classList.toggle('up', isGood);
+    arrowEl.classList.toggle('down', !isGood);
+  });
+})();
+</script>
+
+
+<script>
+(function(){
+  // 1) Squiggly approximation marker for Lean Mass & Fat Change
+  document.querySelectorAll('.recomp-kpi').forEach(kpi => {
+    const label = (kpi.querySelector('.k')?.textContent || "").toLowerCase();
+    const v = kpi.querySelector('.v');
+    if (!v) return;
+
+    if ((label.includes('lean') || label.includes('fat')) && !v.querySelector('.approx')){
+      const t = v.textContent.trim();
+      v.innerHTML = '<span class="approx">~</span>' + t;
+    }
+  });
+
+  // 2) Inline arrows for Calorie goal, Weight, Daily steps (based on prev/new from REPORT_DATA.bars)
+  const data = window.REPORT_DATA || {};
+  const bars = data.bars || {};
+  const labels = bars.labels || [];
+  const prev = bars.prev || [];
+  const curr = bars.curr || [];
+
+  function norm(s){ return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,""); }
+  function idx(name){
+    const n = norm(name);
+    for(let i=0;i<labels.length;i++){
+      if(norm(labels[i]) === n) return i;
+    }
+    return -1;
+  }
+  function num(v){
+    const m = String(v||"").match(/-?\d+(?:\.\d+)?/);
+    return m ? parseFloat(m[0]) : 0;
+  }
+
+  const map = {
+    "calorie goal": ["Daily Calories","Calorie Goal","Calories","Daily Calorie Goal"],
+    "weight": ["Weight"],
+    "daily steps": ["Daily Steps","Steps"]
+  };
+
+  document.querySelectorAll('.recomp-kpi').forEach(kpi => {
+    const label = (kpi.querySelector('.k')?.textContent || "").toLowerCase();
+    const v = kpi.querySelector('.v');
+    if (!v) return;
+
+    let keys = null;
+    Object.keys(map).forEach(k=>{
+      if(label.includes(k)) keys = map[k];
+    });
+    if (!keys) return;
+
+    let i = -1;
+    for (const k of keys){
+      i = idx(k);
+      if (i>=0) break;
+    }
+    if (i<0) return;
+
+    const pv = num(prev[i]);
+    const cv = num(curr[i]);
+    if (!isFinite(pv) || !isFinite(cv) || pv === cv) return;
+
+    const dir = cv > pv ? 'up' : 'down';
+    const wrap = document.createElement('span');
+    wrap.className = 'kpi-inline';
+
+    const arrow = document.createElement('span');
+    arrow.className = 'chg-arrow ' + dir;
+
+    const text = document.createElement('span');
+    text.textContent = v.textContent;
+
+    wrap.appendChild(text);
+    wrap.appendChild(arrow);
+    v.innerHTML = '';
+    v.appendChild(wrap);
+  });
+})();
+</script>
+
+</body>
+</html>

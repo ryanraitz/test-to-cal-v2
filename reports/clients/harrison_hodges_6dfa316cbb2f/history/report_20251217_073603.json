@@ -1,0 +1,98 @@
+{
+  "dailySteps": 4000,
+  "tokens": {
+    "REPORT_TITLE": "Goal Tracker",
+    "REPORT_SUBTITLE": "",
+    "CLIENT_LABEL": "Harrison Hodges",
+    "REPORT_DATE": "12.17.25",
+    "DAILY_STEPS": "4000",
+    "HEADER_CHIP_1": "CUT",
+    "HEADER_CHIP_2": "",
+    "HEADER_CHIP_3": "XT",
+    "MACROS_TITLE": "Protein/Carb/Fat",
+    "PROTEIN_LABEL": "Protein",
+    "PROTEIN_PCT": "27%",
+    "CARB_LABEL": "Carbs",
+    "CARB_PCT": "45%",
+    "FAT_LABEL": "Fat",
+    "FAT_PCT": "28%",
+    "MACROS_FOOTNOTE": "Auto-calculated from daily macro targets.",
+    "BARS_TITLE": "Composition changes",
+    "TABLE_TITLE": "Dietary Changes",
+    "TABLE_COL_1": "Macro",
+    "TABLE_COL_2": "Old",
+    "TABLE_COL_3": "New",
+    "ROW_1_LABEL": "Protein",
+    "ROW_1_MID": "200 g",
+    "ROW_1_VALUE": "200 g",
+    "ROW_2_LABEL": "Carbs",
+    "ROW_2_MID": "332 g",
+    "ROW_2_VALUE": "332 g",
+    "ROW_3_LABEL": "Fats",
+    "ROW_3_MID": "89 g",
+    "ROW_3_VALUE": "89 g",
+    "LINE_TITLE": "Goal Timeline",
+    "AXIS_TOP": "Weight (lb)",
+    "AXIS_BOTTOM": "Start",
+    "AXIS_RIGHT": "Goal"
+  },
+  "macros": [
+    {
+      "key": "Protein",
+      "value": 27,
+      "color": "var(--orange)"
+    },
+    {
+      "key": "Carbs",
+      "value": 45,
+      "color": "var(--teal)"
+    },
+    {
+      "key": "Fat",
+      "value": 28,
+      "color": "var(--teal2)"
+    }
+  ],
+  "bars": {
+    "labels": [
+      "Weight",
+      "Bodyfat %",
+      "TDEE",
+      "Daily Calorie Goal",
+      "Pull-Ups",
+      "Push-Ups"
+    ],
+    "prev": [
+      200.0,
+      20.0,
+      3301,
+      2926,
+      1,
+      10
+    ],
+    "curr": [
+      200.0,
+      20.0,
+      3301,
+      2926,
+      1,
+      10
+    ]
+  },
+  "goalTimeline": {
+    "startWeight": 200.0,
+    "goalWeight": 190.0,
+    "estWeeksMin": 10,
+    "estWeeksMax": 12,
+    "rateLbPerWeek": 0.9,
+    "variationPct": 0.2,
+    "yTicks": [
+      190,
+      187,
+      184,
+      181,
+      178,
+      172
+    ]
+  }
+}

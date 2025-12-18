@@ -1,0 +1,98 @@
+{
+  "dailySteps": 3000,
+  "tokens": {
+    "REPORT_TITLE": "Goal Tracker",
+    "REPORT_SUBTITLE": "",
+    "CLIENT_LABEL": "Ron Chanin",
+    "REPORT_DATE": "12.18.25",
+    "DAILY_STEPS": "3000",
+    "HEADER_CHIP_1": "CUT",
+    "HEADER_CHIP_2": "",
+    "HEADER_CHIP_3": "XT",
+    "MACROS_TITLE": "Protein/Carb/Fat",
+    "PROTEIN_LABEL": "Protein",
+    "PROTEIN_PCT": "38%",
+    "CARB_LABEL": "Carbs",
+    "CARB_PCT": "39%",
+    "FAT_LABEL": "Fat",
+    "FAT_PCT": "23%",
+    "MACROS_FOOTNOTE": "Auto-calculated from daily macro targets.",
+    "BARS_TITLE": "Composition changes",
+    "TABLE_TITLE": "Dietary Changes",
+    "TABLE_COL_1": "Macro",
+    "TABLE_COL_2": "Old",
+    "TABLE_COL_3": "New",
+    "ROW_1_LABEL": "Protein",
+    "ROW_1_MID": "158 g",
+    "ROW_1_VALUE": "170 g",
+    "ROW_2_LABEL": "Carbs",
+    "ROW_2_MID": "159 g",
+    "ROW_2_VALUE": "172 g",
+    "ROW_3_LABEL": "Fats",
+    "ROW_3_MID": "42 g",
+    "ROW_3_VALUE": "46 g",
+    "LINE_TITLE": "Goal Timeline",
+    "AXIS_TOP": "Weight (lb)",
+    "AXIS_BOTTOM": "Start",
+    "AXIS_RIGHT": "Goal"
+  },
+  "macros": [
+    {
+      "key": "Protein",
+      "value": 38,
+      "color": "var(--orange)"
+    },
+    {
+      "key": "Carbs",
+      "value": 39,
+      "color": "var(--teal)"
+    },
+    {
+      "key": "Fat",
+      "value": 23,
+      "color": "var(--teal2)"
+    }
+  ],
+  "bars": {
+    "labels": [
+      "Weight",
+      "Bodyfat %",
+      "TDEE",
+      "Daily Calorie Goal",
+      "Pull-Ups",
+      "Push-Ups"
+    ],
+    "prev": [
+      158.0,
+      10.0,
+      2025,
+      1650,
+      5,
+      30
+    ],
+    "curr": [
+      170.0,
+      15.0,
+      2154,
+      1779,
+      5,
+      25
+    ]
+  },
+  "goalTimeline": {
+    "startWeight": 170.0,
+    "goalWeight": 166.0,
+    "estWeeksMin": 10,
+    "estWeeksMax": 12,
+    "rateLbPerWeek": 0.9,
+    "variationPct": 0.2,
+    "yTicks": [
+      190,
+      187,
+      184,
+      181,
+      178,
+      172
+    ]
+  }
+}

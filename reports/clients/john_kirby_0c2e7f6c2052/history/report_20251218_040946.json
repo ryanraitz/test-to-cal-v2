@@ -1,0 +1,98 @@
+{
+  "dailySteps": 3000,
+  "tokens": {
+    "REPORT_TITLE": "Goal Tracker",
+    "REPORT_SUBTITLE": "",
+    "CLIENT_LABEL": "John Kirby",
+    "REPORT_DATE": "12.18.25",
+    "DAILY_STEPS": "3000",
+    "HEADER_CHIP_1": "GAIN",
+    "HEADER_CHIP_2": "",
+    "HEADER_CHIP_3": "XT",
+    "MACROS_TITLE": "Protein/Carb/Fat",
+    "PROTEIN_LABEL": "Protein",
+    "PROTEIN_PCT": "42%",
+    "CARB_LABEL": "Carbs",
+    "CARB_PCT": "36%",
+    "FAT_LABEL": "Fat",
+    "FAT_PCT": "22%",
+    "MACROS_FOOTNOTE": "Auto-calculated from daily macro targets.",
+    "BARS_TITLE": "Composition changes",
+    "TABLE_TITLE": "Dietary Changes",
+    "TABLE_COL_1": "Macro",
+    "TABLE_COL_2": "Old",
+    "TABLE_COL_3": "New",
+    "ROW_1_LABEL": "Protein",
+    "ROW_1_MID": "150 g",
+    "ROW_1_VALUE": "150 g",
+    "ROW_2_LABEL": "Carbs",
+    "ROW_2_MID": "129 g",
+    "ROW_2_VALUE": "129 g",
+    "ROW_3_LABEL": "Fats",
+    "ROW_3_MID": "34 g",
+    "ROW_3_VALUE": "34 g",
+    "LINE_TITLE": "Goal Timeline",
+    "AXIS_TOP": "Weight (lb)",
+    "AXIS_BOTTOM": "Start",
+    "AXIS_RIGHT": "Goal"
+  },
+  "macros": [
+    {
+      "key": "Protein",
+      "value": 42,
+      "color": "var(--orange)"
+    },
+    {
+      "key": "Carbs",
+      "value": 36,
+      "color": "var(--teal)"
+    },
+    {
+      "key": "Fat",
+      "value": 22,
+      "color": "var(--teal2)"
+    }
+  ],
+  "bars": {
+    "labels": [
+      "Weight",
+      "Bodyfat %",
+      "TDEE",
+      "Daily Calorie Goal",
+      "Pull-Ups",
+      "Push-Ups"
+    ],
+    "prev": [
+      150.0,
+      15.0,
+      1800,
+      1425,
+      1,
+      13
+    ],
+    "curr": [
+      150.0,
+      15.0,
+      1800,
+      1425,
+      1,
+      13
+    ]
+  },
+  "goalTimeline": {
+    "startWeight": 150.0,
+    "goalWeight": 160.0,
+    "estWeeksMin": 10,
+    "estWeeksMax": 12,
+    "rateLbPerWeek": 0.9,
+    "variationPct": 0.2,
+    "yTicks": [
+      190,
+      187,
+      184,
+      181,
+      178,
+      172
+    ]
+  }
+}
