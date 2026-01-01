@@ -1,21 +1,21 @@
 {
-  "dailySteps": 4000,
+  "dailySteps": 2000,
   "tokens": {
     "REPORT_TITLE": "Goal Tracker",
     "REPORT_SUBTITLE": "",
     "CLIENT_LABEL": "Lawson Scher",
     "REPORT_DATE": "12.31.25",
-    "DAILY_STEPS": "4000",
-    "HEADER_CHIP_1": "GAIN",
+    "DAILY_STEPS": "2000",
+    "HEADER_CHIP_1": "CUT",
     "HEADER_CHIP_2": "",
     "HEADER_CHIP_3": "XT",
     "MACROS_TITLE": "Protein/Carb/Fat",
     "PROTEIN_LABEL": "Protein",
-    "PROTEIN_PCT": "29%",
+    "PROTEIN_PCT": "32%",
     "CARB_LABEL": "Carbs",
-    "CARB_PCT": "44%",
+    "CARB_PCT": "43%",
     "FAT_LABEL": "Fat",
-    "FAT_PCT": "27%",
+    "FAT_PCT": "25%",
     "MACROS_FOOTNOTE": "Auto-calculated from daily macro targets.",
     "BARS_TITLE": "Composition changes",
     "TABLE_TITLE": "Dietary Changes",
@@ -23,14 +23,14 @@
     "TABLE_COL_2": "Old",
     "TABLE_COL_3": "New",
     "ROW_1_LABEL": "Protein",
-    "ROW_1_MID": "170 g",
-    "ROW_1_VALUE": "148 g",
+    "ROW_1_MID": "155 g",
+    "ROW_1_VALUE": "170 g",
     "ROW_2_LABEL": "Carbs",
-    "ROW_2_MID": "229 g",
-    "ROW_2_VALUE": "222 g",
+    "ROW_2_MID": "208 g",
+    "ROW_2_VALUE": "229 g",
     "ROW_3_LABEL": "Fats",
-    "ROW_3_MID": "61 g",
-    "ROW_3_VALUE": "59 g",
+    "ROW_3_MID": "55 g",
+    "ROW_3_VALUE": "61 g",
     "LINE_TITLE": "Goal Timeline",
     "AXIS_TOP": "Weight (lb)",
     "AXIS_BOTTOM": "Start",
@@ -39,17 +39,17 @@
   "macros": [
     {
       "key": "Protein",
-      "value": 29,
+      "value": 32,
       "color": "var(--orange)"
     },
     {
       "key": "Carbs",
-      "value": 44,
+      "value": 43,
       "color": "var(--teal)"
     },
     {
       "key": "Fat",
-      "value": 27,
+      "value": 25,
       "color": "var(--teal2)"
     }
   ],
@@ -63,25 +63,25 @@
       "Push-Ups"
     ],
     "prev": [
+      155.0,
+      8.0,
+      2326,
+      1951,
+      25,
+      50
+    ],
+    "curr": [
       170.0,
       14.0,
       2521,
       2146,
       12,
       28
-    ],
-    "curr": [
-      148.0,
-      10.0,
-      2388,
-      2013,
-      25,
-      70
     ]
   },
   "goalTimeline": {
-    "startWeight": 148.0,
-    "goalWeight": 152.0,
+    "startWeight": 170.0,
+    "goalWeight": 162.0,
     "estWeeksMin": 10,
     "estWeeksMax": 12,
     "rateLbPerWeek": 0.9,

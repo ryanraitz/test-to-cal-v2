@@ -32,8 +32,13 @@
 
       /* Macro donut colors */
       --m1: var(--red);
-      --m2: var(--orange);
-      --m3: #A3E635;
+      --m2: #4FC3F7;
+      --m3: #39FF14;
+
+/* Premium donut glow colors (used by macroSlice hover) */
+--glow-protein: rgba(124,58,237,.68);
+--glow-carbs:   rgba(79,195,247,.55);
+--glow-fat: rgba(57,255,20,.68);
 }
     *{box-sizing:border-box}
     body{
@@ -158,6 +163,60 @@
       filter: drop-shadow(0 22px 55px rgba(0,0,0,.55));
     }
     #card-macros .donutWrap svg{width:100%;height:100%}
+
+/* === Premium macro slice color depth + glow (matches curr bars vibe) === */
+@keyframes pieBreathe{
+  0%,100%{ filter: brightness(1.00) saturate(1.00); }
+  50%{     filter: brightness(1.12) saturate(1.15); }
+}
+#card-macros .macroSlice{
+  opacity: .98;
+  animation: pieBreathe 3.6s ease-in-out infinite;
+  transition: transform 320ms cubic-bezier(.16,.9,.2,1), filter 260ms ease, opacity 200ms ease;
+  filter:
+    drop-shadow(0 12px 26px rgba(0,0,0,.45))
+    drop-shadow(0 0 14px var(--glow))
+    drop-shadow(0 0 28px var(--glow));
+}
+#card-macros .macroSlice:hover{
+  transform: scale(1.06);
+  opacity: 1;
+  filter:
+    drop-shadow(0 0 26px var(--glow))
+    drop-shadow(0 0 62px var(--glow))
+    drop-shadow(0 16px 32px rgba(0,0,0,.65))
+    brightness(1.26) saturate(1.35);
+}
+
+/* --- Pie slice sheen overlay (directional highlight to match "curr" bars) --- */
+.macroSliceSheen{
+  pointer-events:none;
+  opacity:.55;
+  mix-blend-mode: screen;
+  filter: blur(.15px);
+}
+.macroSliceSheen.pulse{
+  animation: sheenPulse 3.6s ease-in-out infinite;
+}
+@keyframes sheenPulse{
+  0%,100%{ opacity:.42; }
+  50%{ opacity:.70; }
+}
+
+/* --- Slow rotational energy field behind donut (subtle, premium) --- */
+#energyField{
+  transform-origin: 100px 100px;
+  animation: donutSpin 16s linear infinite;
+  opacity:.55;
+}
+@keyframes donutSpin{
+  from{ transform: rotate(0deg); }
+  to{ transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  #card-macros .macroSlice{ animation:none !important; }
+}
 
     #card-macros .center{
       position:absolute;inset:0;
@@ -376,7 +435,7 @@
       flex-direction:column;
       gap:18px;
       font-size:20px;
-      color:rgba(255,255,255,.85);
+      color:rgba(255,255,255,.65);
     }
 
     /* Tooltip */
@@ -446,7 +505,7 @@
       flex-direction:column;
       gap:18px;
       font-size:20px;
-      color:rgba(255,255,255,.85);
+      color:rgba(255,255,255,.65);
     }
     .legend-row{display:flex;align-items:center;gap:12px;}
     .dot{width:14px;height:14px;border-radius:999px;display:inline-block;}
@@ -454,7 +513,7 @@
     .legend-row .v{font-weight:750}
     .tiny{
       margin-top:14px;
-      color:rgba(255,255,255,.35);
+      color:rgba(255,255,255,.22);
       font-size:14px;
     }
 
@@ -620,7 +679,7 @@
       width:100%;
       border-collapse:collapse;
       font-size:22px;
-      color:rgba(255,255,255,.85);
+      color:rgba(255,255,255,.65);
     }
     .table th,.table td{
       padding:18px 10px;
@@ -663,7 +722,7 @@
     }
     .axis-label{
       position:absolute;
-      color:rgba(255,255,255,.35);
+      color:rgba(255,255,255,.22);
       font-size:14px;
       letter-spacing:.2px;
     }
@@ -696,7 +755,7 @@
     }
     .gtSwatch.gtReal{ background: linear-gradient(90deg, rgba(101,214,205,.95), rgba(242,162,59,.95)); }
     .gtSwatch.gtOpt{  background: linear-gradient(90deg, rgba(160,120,255,.95), rgba(60,190,255,.95)); }
-    .gtSwatch.gtNow{  background: rgba(255,255,255,.85); box-shadow:0 0 0 5px rgba(255,255,255,.06); }
+    .gtSwatch.gtNow{  background: rgba(255,255,255,.65); box-shadow:0 0 0 5px rgba(255,255,255,.06); }
 
     .gtStats{
       display:flex;
@@ -1234,11 +1293,11 @@
   background: radial-gradient(
     ellipse at center,
     rgba(0,255,170,0.28) 0%,
-    rgba(0,255,170,0.18) 35%,
-    rgba(0,255,170,0.08) 60%,
+    rgba(0,255,170,0.15) 35%,
+    rgba(0,255,170,0.06) 60%,
     rgba(0,255,170,0.0) 75%
   );
-  filter: blur(18px);
+  filter: blur(16px);
   z-index: -1;
 }
 /* ======================================== */
@@ -1348,7 +1407,7 @@
     box-shadow:
       inset 0 0 0 1px rgba(255,255,255,.24),
       0 0 16px rgba(255,255,255,.48),
-      0 0 64px rgba(255,255,255,.26);
+      0 0 64px rgba(255,255,255,.20);
   }
   100%{
     filter: brightness(1.15) saturate(1.22);
@@ -1501,7 +1560,7 @@
     box-shadow:
       inset 0 0 0 1px rgba(255,255,255,.24),
       0 0 16px rgba(255,255,255,.48),
-      0 0 64px rgba(255,255,255,.26);
+      0 0 64px rgba(255,255,255,.20);
   }
   100%{
     filter: brightness(1.15) saturate(1.22);
@@ -1648,7 +1707,7 @@
   font-weight: 900;
   display:inline-block;
   margin-right: 2px;
-  transform: rotate(-6deg) scale(1.05);
+  transform: rotate(-6deg) scale(1.035);
   text-shadow:
     0 0 6px rgba(255,255,255,.45),
     0 0 14px rgba(255,255,255,.25);
@@ -1802,25 +1861,455 @@ body{
 }
 /* ===== END responsive scaling ===== */
 
+
+/* === Shared Section Glow (matched to Recomp) === */
+.section-glow {
+  position: relative;
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(30,180,120,.18), rgba(0,0,0,.55)),
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+  box-shadow:
+    0 0 0 1px rgba(80,255,180,.22),
+    0 0 22px rgba(80,255,180,.18),
+    0 14px 34px rgba(0,0,0,.30);
+}
+
+.section-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(90deg,
+    rgba(120,255,200,.0),
+    rgba(120,255,200,.35),
+    rgba(120,255,200,.0)
+  );
+  opacity: .55;
+  pointer-events: none;
+}
+
+.section-glow .section-title {
+  font-weight: 850;
+  color: rgba(255,255,255,.95);
+}
+
+
+/* === Unified Header + Edge Refinement (Professional Pass) === */
+.section-glow {
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(36,190,130,.22), rgba(0,0,0,.60)),
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
+  box-shadow:
+    0 0 0 1px rgba(120,255,200,.28),
+    0 0 26px rgba(80,255,180,.22),
+    0 18px 40px rgba(0,0,0,.35);
+}
+
+.section-glow::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border-radius: inherit;
+  
+  pointer-events: none;
+}
+
+.section-header,
+.section-title,
+h2 {
+  position: relative;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: linear-gradient(90deg,
+    rgba(120,255,200,.22),
+    rgba(120,255,200,.06),
+    rgba(120,255,200,.22)
+  );
+  box-shadow: inset 0 0 0 1px rgba(120,255,200,.35);
+  color: rgba(230,255,245,.95);
+  letter-spacing: .02em;
+}
+
+
+/* === Remove dashed/dotted header outlines (V2 cleanup) === */
+.section-header,
+.section-title,
+h2 {
+  border: none !important;
+  outline: none !important;
+}
+
+
+
+/* =========================================================
+   UNIFY ALL SECTION TITLES WITH RECOMP GLOW
+   ========================================================= */
+
+/* Base style for all section headers */
+.card h2 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: #ffffff;
+  position: relative;
+  z-index: 1;
+
+  /* Glow stack (matches recomp headline) */
+  text-shadow:
+    0 0 6px rgba(32,255,178,0.35),
+    0 0 14px rgba(32,255,178,0.25),
+    0 0 28px rgba(32,255,178,0.15);
+}
+
+/* Soft radiant back-glow behind titles */
+.card h2::after {
+  content: "";
+  position: absolute;
+  left: -16px;
+  right: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 140%;
+  z-index: -1;
+
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0,255,170,0.26) 0%,
+    rgba(0,255,170,0.15) 35%,
+    rgba(0,255,170,0.06) 60%,
+    rgba(0,255,170,0.00) 75%
+  );
+
+  filter: blur(16px);
+  pointer-events: none;
+}
+
+/* Subtitles stay muted so hierarchy is preserved */
+.card .subcap {
+  color: rgba(255,255,255,.65);
+}
+/* =========================================================
+   V3: PREMIUM TITLE LUMINANCE + BLOOM (DEMO SAFE)
+   - Makes all section titles feel like "You're recomping successfully"
+   - Keeps recomp headline slightly stronger for hierarchy
+   ========================================================= */
+
+:root{
+  --titleGlowA: rgba(32,255,178,0.42);
+  --titleGlowB: rgba(32,255,178,0.30);
+  --titleGlowC: rgba(32,255,178,0.18);
+  --titleBloom: rgba(0,255,170,0.26);
+}
+
+/* Subtle slow pulse for premium feel (export-safe; will render static in PDF/PNG) */
+@keyframes titleGlowPulse{
+  0%,100%{
+    filter: brightness(1.05);
+    text-shadow:
+      0 0 7px var(--titleGlowA),
+      0 0 16px var(--titleGlowB),
+      0 0 34px var(--titleGlowC);
+  }
+  50%{
+    filter: brightness(1.16);
+    text-shadow:
+      0 0 9px rgba(32,255,178,0.55),
+      0 0 22px rgba(32,255,178,0.38),
+      0 0 44px rgba(32,255,178,0.22);
+  }
+}
+
+/* Override any earlier generic h2 styling so we control the final look */
+.card h2{
+  /* capsule refinement */
+  display:block;
+  padding: 12px 16px !important;
+  border-radius: 10px !important;
+  background: linear-gradient(90deg,
+    rgba(120,255,200,.16),
+    rgba(120,255,200,.05),
+    rgba(120,255,200,.16)
+  ) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(120,255,200,.26),
+    0 10px 30px rgba(0,0,0,.35) !important;
+
+  /* headline luminance */
+  color:#ffffff !important;
+  font-weight: 850 !important;
+  letter-spacing: .2px !important;
+
+  /* glow */
+  text-shadow:
+    0 0 7px var(--titleGlowA),
+    0 0 16px var(--titleGlowB),
+    0 0 34px var(--titleGlowC) !important;
+
+  /* premium micro-motion */
+  animation: titleGlowPulse 12s ease-in-out infinite;
+  position:relative;
+  z-index:1;
+}
+
+/* Bloom behind the text (not the whole card) */
+.card h2::after{
+  content:"";
+  position:absolute;
+  left:-14px; right:-14px;
+  top:50%;
+  transform: translateY(-50%);
+  height: 150%;
+  background: radial-gradient(
+    ellipse at center,
+    var(--titleBloom) 0%,
+    rgba(0,255,170,0.15) 35%,
+    rgba(0,255,170,0.06) 60%,
+    rgba(0,255,170,0.00) 76%
+  );
+  filter: blur(16px);
+  z-index:-1;
+  pointer-events:none;
+  opacity: .95;
+}
+
+/* Keep recomp headline slightly stronger (hierarchy) */
+.recomp-summary .recomp-title{
+  text-shadow:
+    0 0 10px rgba(32,255,178,0.52),
+    0 0 24px rgba(32,255,178,0.36),
+    0 0 52px rgba(32,255,178,0.22) !important;
+}
+.recomp-summary .recomp-title::after{
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0,255,170,0.36) 0%,
+    rgba(0,255,170,0.22) 35%,
+    rgba(0,255,170,0.10) 60%,
+    rgba(0,255,170,0.00) 76%
+  ) !important;
+  filter: blur(18px) !important;
+}
+
+/* Prefer-reduced-motion compliance */
+@media (prefers-reduced-motion: reduce){
+  .card h2{ animation:none !important; }
+}
+/* =========================================================
+   V3_MAIN + PIE AURA (MATCH CURR BAR ENERGY)
+   Goal: keep template IDENTICAL, just add a glow BEHIND the pie.
+   - No markup/JS changes
+   - Aura uses the same "curr bars" white-bloom style, but tuned for donut
+   ========================================================= */
+
+@keyframes pieAuraBreathe{
+  0%{
+    transform: scale(1.00);
+    opacity: .50;
+    filter: blur(16px) saturate(1.10);
+  }
+  45%{
+    transform: scale(1.08);
+    opacity: .82;
+    filter: blur(18px) saturate(1.28);
+  }
+  100%{
+    transform: scale(1.00);
+    opacity: .50;
+    filter: blur(16px) saturate(1.10);
+  }
+}
+
+/* Glow BEHIND the donut only */
+#card-macros .donutWrap{
+  position: relative;
+  isolation: isolate;
+}
+
+/* Replace any earlier donutWrap::before with a bar-like aura (but color-safe) */
+#card-macros .donutWrap::before{
+  content:"";
+  position:absolute;
+  inset:-26px;
+  border-radius:50%;
+  z-index:0;
+  pointer-events:none;
+
+  /* Bar-like bloom: white core + soft macro-tinted halo */
+  background:
+    radial-gradient(circle at 50% 50%,
+      rgba(255,255,255,.18) 0%,
+      rgba(255,255,255,.12) 22%,
+      rgba(124,58,237,.18) 36%,
+      rgba(59,130,246,.14) 52%,
+      rgba(163,229,53,.16) 66%,
+      rgba(0,0,0,0) 76%);
+  mix-blend-mode: screen;
+
+  animation: pieAuraBreathe 4.2s ease-in-out infinite;
+}
+
+/* Keep SVG + center ABOVE the aura */
+#card-macros .donutWrap > svg{ position: relative; z-index: 2; }
+#card-macros .center{ z-index: 3; }
+
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  #card-macros .donutWrap::before{ animation:none !important; }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  #card-macros .donutWrap::before,
+  #card-macros .donutWrap::after{ animation:none !important; }
+}
+/* =========================================================
+   PIE GLOW MATCH (BAR-CURR LEVEL) – FINAL TUNING
+   Goal: visually indistinguishable energy vs .bar-curr
+   No rotation, no visible motion paths, only pulse + shine
+   ========================================================= */
+
+@keyframes pieCurrPulse_STRONG{
+  0%,100%{
+    transform: scale(1.00);
+    opacity: .62;
+    filter: blur(18px) saturate(1.45) brightness(1.10);
+  }
+  38%{
+    transform: scale(1.15);
+    opacity: 1.00;
+    filter: blur(28px) saturate(1.95) brightness(1.30);
+  }
+}
+
+@keyframes pieCurrShine_STRONG{
+  0%{ opacity:.10; }
+  18%{ opacity:.42; }
+  32%{ opacity:.18; }
+  46%{ opacity:.55; }
+  60%{ opacity:.22; }
+  100%{ opacity:.12; }
+}
+
+/* Override previous layers completely */
+#card-macros .donutWrap::before{
+  animation: pieCurrPulse_STRONG 2.1s cubic-bezier(.4,0,.2,1) infinite !important;
+  inset:-56px !important;
+  background:
+    radial-gradient(circle at center,
+      rgba(255,255,255,.22) 0%,
+      rgba(255,255,255,.20) 14%,
+      rgba(124,58,237,.32) 32%,
+      rgba(59,130,246,.28) 50%,
+      rgba(163,229,53,.30) 68%,
+      rgba(0,0,0,0) 82%) !important;
+}
+
+#card-macros .donutWrap::after{
+  animation: pieCurrShine_STRONG .95s linear infinite !important;
+  inset:-64px !important;
+  background:
+    radial-gradient(circle at 40% 28%,
+      rgba(255,255,255,.65) 0%,
+      rgba(255,255,255,.22) 12%,
+      rgba(255,255,255,0) 30%),
+    radial-gradient(circle at 72% 64%,
+      rgba(255,255,255,.58) 0%,
+      rgba(255,255,255,.22) 14%,
+      rgba(255,255,255,0) 34%) !important;
+  filter: blur(9px) saturate(1.22) brightness(1.06) !important;
+  opacity:.22 !important;
+}
+
+/* Keep content dominant */
+#card-macros .donutWrap > svg,
+#card-macros .center{ z-index: 3 !important; }
+/* =========================================================
+   PIE GLOW RESPONSIBLE TAME (BASE)
+   - Reduce idle glow intensity only
+   - Keep all bar animations untouched
+   - Keep slice hover behavior unchanged
+   ========================================================= */
+
+#card-macros .donutWrap::before{
+  opacity: .10 !important;
+  inset: -28px !important;
+  filter: blur(14px) saturate(1.08) brightness(1.03) !important;
+}
+
+#card-macros .donutWrap::after{
+  opacity: .03 !important;
+  inset: -40px !important;
+  filter: blur(8px) saturate(1.04) brightness(1.01) !important;
+}
+
+/* ===============================
+   Shared Macro Visual Language
+   =============================== */
+:root{
+  --macro-glow-strength: 0.55;
+  --macro-glow-blur: 18px;
+  --macro-glow-pulse: 2.8s;
+}
+
+/* Match donut slice glow on CURRENT bars */
+.bar-curr{
+  position: relative;
+  filter: saturate(1.15) brightness(1.05);
+  box-shadow:
+    0 0 calc(var(--macro-glow-blur) * 0.6) rgba(255,255,255,0.25),
+    0 0 var(--macro-glow-blur) rgba(255,255,255,.22);
+  animation: macroPulse var(--macro-glow-pulse) ease-in-out infinite;
+}
+
+/* soft aura behind current bars */
+.bar-curr::after{
+  content:"";
+  position:absolute;
+  inset:-6px;
+  background: inherit;
+  filter: blur(calc(var(--macro-glow-blur) * 0.9));
+  opacity: var(--macro-glow-strength);
+  z-index:-1;
+}
+
+/* calm previous bars */
+.bar-prev{
+  opacity:0.45;
+  filter: saturate(0.9) brightness(0.9);
+}
+
+/* same pulse timing as donut */
+@keyframes macroPulse{
+  0%   { opacity: 0.85; }
+  50%  { opacity: 1.0; }
+  100% { opacity: 0.85; }
+}
 </style>
+
+<script>
+window.REPORT_DATA = {"dailySteps": 4000, "tokens": {"REPORT_TITLE": "Goal Tracker", "REPORT_SUBTITLE": "", "CLIENT_LABEL": "Lawson Scher", "REPORT_DATE": "12.31.25", "DAILY_STEPS": "4000", "HEADER_CHIP_1": "GAIN", "HEADER_CHIP_2": "", "HEADER_CHIP_3": "XT", "MACROS_TITLE": "Protein/Carb/Fat", "PROTEIN_LABEL": "Protein", "PROTEIN_PCT": "29%", "CARB_LABEL": "Carbs", "CARB_PCT": "44%", "FAT_LABEL": "Fat", "FAT_PCT": "27%", "MACROS_FOOTNOTE": "Auto-calculated from daily macro targets.", "BARS_TITLE": "Composition changes", "TABLE_TITLE": "Dietary Changes", "TABLE_COL_1": "Macro", "TABLE_COL_2": "Old", "TABLE_COL_3": "New", "ROW_1_LABEL": "Protein", "ROW_1_MID": "170 g", "ROW_1_VALUE": "148 g", "ROW_2_LABEL": "Carbs", "ROW_2_MID": "229 g", "ROW_2_VALUE": "222 g", "ROW_3_LABEL": "Fats", "ROW_3_MID": "61 g", "ROW_3_VALUE": "59 g", "LINE_TITLE": "Goal Timeline", "AXIS_TOP": "Weight (lb)", "AXIS_BOTTOM": "Start", "AXIS_RIGHT": "Goal"}, "macros": [{"key": "Protein", "value": 29, "color": "var(--orange)"}, {"key": "Carbs", "value": 44, "color": "var(--teal)"}, {"key": "Fat", "value": 27, "color": "var(--teal2)"}], "bars": {"labels": ["Weight", "Bodyfat %", "TDEE", "Daily Calorie Goal", "Pull-Ups", "Push-Ups"], "prev": [170.0, 14.0, 2521, 2146, 12, 28], "curr": [148.0, 10.0, 2388, 2013, 25, 70]}, "goalTimeline": {"startWeight": 148.0, "goalWeight": 152.0, "estWeeksMin": 10, "estWeeksMax": 12, "rateLbPerWeek": 0.9, "variationPct": 0.2, "yTicks": [190, 187, 184, 181, 178, 172]}, "recomp": {"fat_change_lb": -9.0, "lean_muscle_change_lb": 1.2743225806451612, "strength_change_pct": 106.19354838709678, "used_inbody_bfm": false, "used_inbody_smm": false, "lean_muscle_is_estimate": true}};
+</script>
 </head>
 <body>
 <div id="viewport"><div id="pageWrap"><div class="page" id="page">
 <div class="inner">
 <div class="header">
 <div class="title">
-<h1 data-var="REPORT_TITLE" id="var-reportTitle"><span class="token">Progress Report</span></h1>
+<h1 data-var="REPORT_TITLE" id="var-reportTitle"><span class="token">{{REPORT_TITLE}}</span></h1>
 <div class="subtitle" data-var="REPORT_SUBTITLE" id="var-subtitle">
-<span class="token">A coach-generated results summary for the client, including macros, adherence, and trend lines.</span>
+<span class="token">{{REPORT_SUBTITLE}}</span>
 </div>
 </div>
 <div class="meta">
-<div class="client" data-var="CLIENT_LABEL" id="var-clientLabel"><span class="token">Ron Chanin</span></div>
-<div class="date" data-var="REPORT_DATE" id="var-reportDate"><span class="token">12.18.25</span></div>
+<div class="client" data-var="CLIENT_LABEL" id="var-clientLabel"><span class="token">{{CLIENT_LABEL}}</span></div>
+<div class="date" data-var="REPORT_DATE" id="var-reportDate"><span class="token">{{REPORT_DATE}}</span></div>
 <div class="chips">
-<div data-var="HEADER_CHIP_1" id="var-chip1"><span class="token">CUT</span></div>
-<div data-var="HEADER_CHIP_2" id="var-chip2"><span class="token"></span></div>
-<div data-var="HEADER_CHIP_3" id="var-chip3"><span class="token">XT</span></div>
+<div data-var="HEADER_CHIP_1" id="var-chip1"><span class="token">{{HEADER_CHIP_1}}</span></div>
+<div data-var="HEADER_CHIP_2" id="var-chip2"><span class="token">{{HEADER_CHIP_2}}</span></div>
+<div data-var="HEADER_CHIP_3" id="var-chip3"><span class="token">{{HEADER_CHIP_3}}</span></div>
 </div>
 <div class="header-disclaimer">This report is for educational purposes only and does not constitute medical or dietary treatment. Consult a licensed healthcare professional before making significant dietary or lifestyle changes.</div>
 </div>
@@ -1829,7 +2318,7 @@ body{
 <div class="grid">
 <!-- TOP LEFT -->
 <section class="card" id="card-macros">
-<h2 data-var="MACROS_TITLE" id="var-macrosTitle"><span class="token">Macronutrient Breakdown</span></h2>
+<h2 data-var="MACROS_TITLE" id="var-macrosTitle"><span class="token">{{MACROS_TITLE}}</span></h2>
 <div class="macroDonutShell">
 <div class="macroDonutGrid">
 <div class="macroViz">
@@ -1858,17 +2347,17 @@ body{
 </div>
 </div>
 <div class="dietary-inline">
-<h2 data-var="TABLE_TITLE" id="var-tableTitle"><span class="token">Dietary Changes</span></h2>
+<h2 data-var="TABLE_TITLE" id="var-tableTitle"><span class="token">{{TABLE_TITLE}}</span></h2>
 
   <div class="dietary-hbars-wrap">
     <div class="dietary-hbars-host hHost" id="dietaryMacroBars"></div>
   </div>
 
-<div class="tiny" data-var="MACROS_FOOTNOTE" id="var-macrosFootnote"><span class="token">Auto-calculated from daily macro targets.</span></div>
+<div class="tiny" data-var="MACROS_FOOTNOTE" id="var-macrosFootnote"><span class="token">{{MACROS_FOOTNOTE}}</span></div>
 </div></section>
 <!-- TOP RIGHT -->
 <section class="card" id="card-bars">
-<h2 data-var="BARS_TITLE" id="var-barsTitle"><span class="token">Composition Changes</span></h2>
+<h2 data-var="BARS_TITLE" id="var-barsTitle"><span class="token">{{BARS_TITLE}}</span></h2>
 <div class="bars-wrap">
 <div aria-label="Bar chart" class="chart" id="chart-bars"></div>
 <div aria-label="Legend" class="kpis kpis-bars">
@@ -1905,34 +2394,34 @@ body{
 </div>
 </div>
 
-<div aria-label="Recomposition summary" class="recomp-summary">
+<div aria-label="Recomposition summary" class="recomp-summary section-glow">
 <div class="recomp-title">You’re recomping successfully.</div>
-<div class="recomp-sub">Fat ↓  |  Lean Mass ↑  |  Performance ↑</div>
+<div class="recomp-sub">Fat ↓  |  Lean Muscle ↑  |  Performance ↑</div>
 <div class="recomp-kpis">
 <div class="recomp-kpi">
-<div class="k">Fat change</div>
-<div class="v neg">-6.8 lb</div>
+<div class="k">Fat loss</div>
+<div class="v pos">-9.0 lb</div>
 </div>
 <div class="recomp-kpi">
-<div class="k">Lean mass</div>
-<div class="v pos">+4.2 lb</div>
+<div class="k">Lean muscle</div>
+<div class="v pos">+1.3 lb</div>
 </div>
 <div class="recomp-kpi">
 <div class="k">Strength</div>
-<div class="v pos">+18%</div>
+<div class="v pos">+106%</div>
 </div>
 
 <div class="recomp-kpi">
 <div class="k">Calorie goal</div>
-<div class="v pos">3,025</div>
+<div class="v pos">2,013</div>
 </div>
 <div class="recomp-kpi">
 <div class="k">Weight</div>
-<div class="v pos">186</div>
+<div class="v pos">148</div>
 </div>
 <div class="recomp-kpi">
 <div class="k">Daily steps</div>
-<div class="v pos">9,250</div>
+<div class="v pos">4,000</div>
 </div>
 
 </div>
@@ -1983,7 +2472,7 @@ body{
 
 <!-- BOTTOM RIGHT -->
 <section class="card" id="card-line">
-<h2 data-var="LINE_TITLE" id="var-lineTitle"><span class="token">Goal Timeline</span></h2>
+<h2 data-var="LINE_TITLE" id="var-lineTitle"><span class="token">{{LINE_TITLE}}</span></h2>
 <div class="line-wrap">
 <div class="gtTop">
 <div aria-label="Trajectory legend" class="gtLegend">
@@ -2003,9 +2492,9 @@ body{
 </div>
 </div>
 <div aria-label="Goal timeline chart" class="line" id="chart-line">
-<div class="axis-label" data-var="AXIS_TOP" id="var-axisTop" style="left:10px; top:10px"><span class="token">Weight (lb)</span></div>
-<div class="axis-label" data-var="AXIS_BOTTOM" id="var-axisBottom" style="left:10px; bottom:10px"><span class="token">Start</span></div>
-<div class="axis-label" data-var="AXIS_RIGHT" id="var-axisRight" style="right:10px; bottom:10px"><span class="token">Goal</span></div>
+<div class="axis-label" data-var="AXIS_TOP" id="var-axisTop" style="left:10px; top:10px"><span class="token">{{AXIS_TOP}}</span></div>
+<div class="axis-label" data-var="AXIS_BOTTOM" id="var-axisBottom" style="left:10px; bottom:10px"><span class="token">{{AXIS_BOTTOM}}</span></div>
+<div class="axis-label" data-var="AXIS_RIGHT" id="var-axisRight" style="right:10px; bottom:10px"><span class="token">{{AXIS_RIGHT}}</span></div>
 </div>
 <div class="brq-disclaimer">
   This report is for educational purposes only and does not constitute medical or dietary treatment.
@@ -2083,81 +2572,6 @@ body{
      * Populate this object from your Python build_report.py (or JSON) and everything
      * with a data-var token can be swapped, plus charts get rendered.
      */
-    window.REPORT_DATA = window.REPORT_DATA || {
-      tokens: {
-        REPORT_TITLE: "Progress Report",
-        REPORT_SUBTITLE: "A coach-generated results summary for the client, including macros, adherence, and trend lines.",
-        CLIENT_LABEL: "Client Name",
-        REPORT_DATE: "MM.DD.YYYY",
-        HEADER_CHIP_1: "L",
-        HEADER_CHIP_2: "3",
-        HEADER_CHIP_3: "XT",
-
-        MACROS_TITLE: "Macronutrient Breakdown",
-        PROTEIN_LABEL: "Protein",
-        PROTEIN_PCT: "40.0%",
-        CARB_LABEL: "Carbs",
-        CARB_PCT: "35.0%",
-        FAT_LABEL: "Fat",
-        FAT_PCT: "25.0%",
-        MACROS_FOOTNOTE: "Auto-calculated from daily macro targets.",
-
-        BARS_TITLE: "Composition Changes",
-        LEGEND_PREV: "",
-        LEGEND_CUR: "",
-        TABLE_TITLE: "Dietary Changes",
-        TABLE_COL_1: "Macro",
-        TABLE_COL_2: "Previous",
-        TABLE_COL_3: "Updated",
-        ROW_1_LABEL: "Protein",
-        ROW_1_MID: "190 g",
-        ROW_1_VALUE: "210 g",
-        ROW_2_LABEL: "Carbs",
-        ROW_2_MID: "210 g",
-        ROW_2_VALUE: "180 g",
-        ROW_3_LABEL: "Fats",
-        ROW_3_MID: "70 g",
-        ROW_3_VALUE: "65 g",
-        ROW_4_LABEL: "TDEE",
-        ROW_4_MID: "Target",
-        ROW_4_VALUE: "2,650",
-        ROW_5_LABEL: "Daily Calories",
-        ROW_5_MID: "Goal",
-        ROW_5_VALUE: "2,150",
-        ROW_6_LABEL: "Protein",
-        ROW_6_MID: "Goal",
-        ROW_6_VALUE: "165 g",
-        ROW_7_LABEL: "Carbs",
-        ROW_7_MID: "Goal",
-        ROW_7_VALUE: "185 g",
-        ROW_8_LABEL: "Fats",
-        ROW_8_MID: "Goal",
-        ROW_8_VALUE: "65 g",
-        LINE_TITLE: "Weekly Trends",
-        AXIS_TOP: "Body Fat %",
-        AXIS_BOTTOM: "Week 1",
-        AXIS_RIGHT: "Week N"
-      },
-
-	  macros: [
-	    { key:"Protein", value:40, color:"var(--green)" },   // green
-	    { key:"Carbs",   value:35, color:"var(--orange)" },  // yellow
-	    { key:"Fat",     value:25, color:"#FF4D9D" }     // pink
-	  ],
-	  
-
-      bars: {
-        labels: ["Weight", "Bodyfat %", "TDEE", "CICO Goal", "Pull-Ups", "Push-Ups"],
-        prev: [190, 24, 6, 28, 2550, 2300],
-        curr: [180, 22, 8, 35, 2450, 2100]
-      },
-
-      lines: [
-        { name:"Body Fat %", color:"var(--orange)", values:[19.2, 18.7, 18.7, 18.3, 18.1, 18.0, 17.8] },
-        { name:"Weight", color:"var(--blue)", values:[187.0, 186.2, 185.8, 185.1, 184.6, 184.0, 183.2] }
-      ]
-    };
-
     function applyTokens(){
       const tokens = (window.REPORT_DATA && window.REPORT_DATA.tokens) || {};
       document.querySelectorAll("[data-var]").forEach(el=>{
@@ -2205,6 +2619,81 @@ body{
       const cx=100, cy=100, r=78, thickness=26;
       svg.innerHTML = "";
 
+
+// Insert premium gradients (keeps macro colors but adds depth)
+const defs = document.createElementNS("http://www.w3.org/2000/svg","defs");
+defs.innerHTML = `
+  <radialGradient id="grad-protein" cx="35%" cy="30%" r="70%">
+    <stop offset="0%" stop-color="#b88cff"/>
+    <stop offset="55%" stop-color="#7C3AED"/>
+    <stop offset="100%" stop-color="#4c1d95"/>
+  </radialGradient>
+  <radialGradient id="grad-carbs" cx="35%" cy="30%" r="70%">
+    <stop offset="0%" stop-color="#b9ecff"/>
+    <stop offset="55%" stop-color="#4FC3F7"/>
+    <stop offset="100%" stop-color="#1565c0"/>
+  </radialGradient>
+  <radialGradient id="grad-fat" cx="35%" cy="30%" r="70%">
+    <stop offset="0%" stop-color="#baff8a"/>
+    <stop offset="55%" stop-color="#39FF14"/>
+    <stop offset="100%" stop-color="#1e7f00"/>
+  </radialGradient>
+  <linearGradient id="sheen-protein" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="rgba(255,255,255,0.00)"/>
+    <stop offset="38%" stop-color="rgba(255,255,255,0.10)"/>
+    <stop offset="55%" stop-color="rgba(255,255,255,0.32)"/>
+    <stop offset="72%" stop-color="rgba(255,255,255,0.10)"/>
+    <stop offset="100%" stop-color="rgba(255,255,255,0.00)"/>
+  </linearGradient>
+  <linearGradient id="sheen-carbs" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="rgba(255,255,255,0.00)"/>
+    <stop offset="38%" stop-color="rgba(255,255,255,0.10)"/>
+    <stop offset="55%" stop-color="rgba(255,255,255,0.32)"/>
+    <stop offset="72%" stop-color="rgba(255,255,255,0.10)"/>
+    <stop offset="100%" stop-color="rgba(255,255,255,0.00)"/>
+  </linearGradient>
+  <linearGradient id="sheen-fat" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="rgba(255,255,255,0.00)"/>
+    <stop offset="38%" stop-color="rgba(255,255,255,0.10)"/>
+    <stop offset="55%" stop-color="rgba(255,255,255,0.32)"/>
+    <stop offset="72%" stop-color="rgba(255,255,255,0.10)"/>
+    <stop offset="100%" stop-color="rgba(255,255,255,0.00)"/>
+  </linearGradient>
+  <radialGradient id="energyHalo" cx="50%" cy="50%" r="60%">
+    <stop offset="0%" stop-color="rgba(255,255,255,0.00)"/>
+    <stop offset="55%" stop-color="rgba(255,255,255,0.06)"/>
+    <stop offset="75%" stop-color="rgba(255,255,255,0.00)"/>
+  </radialGradient>
+`;
+svg.appendChild(defs);
+
+      // subtle rotating energy field behind donut (premium, matches animated bars vibe)
+      const energy = document.createElementNS("http://www.w3.org/2000/svg","g");
+      energy.setAttribute("id","energyField");
+      const halo1 = document.createElementNS("http://www.w3.org/2000/svg","circle");
+      halo1.setAttribute("cx",cx); halo1.setAttribute("cy",cy);
+      halo1.setAttribute("r", r + 18);
+      halo1.setAttribute("fill","none");
+      halo1.setAttribute("stroke","url(#energyHalo)");
+      halo1.setAttribute("stroke-width","26");
+      halo1.setAttribute("stroke-linecap","round");
+      halo1.setAttribute("stroke-dasharray","14 26");
+      halo1.setAttribute("opacity",".75");
+      energy.appendChild(halo1);
+
+      const halo2 = document.createElementNS("http://www.w3.org/2000/svg","circle");
+      halo2.setAttribute("cx",cx); halo2.setAttribute("cy",cy);
+      halo2.setAttribute("r", r + 10);
+      halo2.setAttribute("fill","none");
+      halo2.setAttribute("stroke","rgba(255,255,255,.06)");
+      halo2.setAttribute("stroke-width","2");
+      halo2.setAttribute("opacity",".55");
+      energy.appendChild(halo2);
+
+      svg.appendChild(energy);
+
+
+
       // background ring
       const bg = document.createElementNS("http://www.w3.org/2000/svg","circle");
       bg.setAttribute("cx",cx); bg.setAttribute("cy",cy); bg.setAttribute("r",r);
@@ -2231,9 +2720,22 @@ body{
         const path = document.createElementNS("http://www.w3.org/2000/svg","path");
         path.setAttribute("d", describeArc(cx, cy, r, angle, angle+slice));
         path.setAttribute("fill","none");
-        path.setAttribute("stroke", d.color || "white");
+        // Use gradient strokes for richer color depth (still macro-linked)
+        const gradByKey = {
+          "Protein":"url(#grad-protein)",
+          "Carbs":"url(#grad-carbs)",
+          "Fat":"url(#grad-fat)"
+        };
+        path.setAttribute("stroke", gradByKey[d.key] || (d.color || "white"));
         path.setAttribute("stroke-width", thickness);
         path.setAttribute("stroke-linecap","butt");
+        path.classList.add("macroSlice");
+        const glowByKey = {
+          "Protein":"var(--glow-protein)",
+          "Carbs":"var(--glow-carbs)",
+          "Fat":"var(--glow-fat)"
+        };
+        path.style.setProperty("--glow", glowByKey[d.key] || "rgba(255,255,255,.22)");
         svg.appendChild(path);
 
         angle += slice;
@@ -2244,6 +2746,11 @@ body{
       hole.setAttribute("cx",cx); hole.setAttribute("cy",cy); hole.setAttribute("r",r-thickness+2);
       hole.setAttribute("fill","var(--bg0)");
       svg.appendChild(hole);
+
+      // Keep the Dietary Changes (macro bars) in sync with sliders in real time.
+      if(typeof window.renderDietaryMacroBars === "function"){
+        try{ window.renderDietaryMacroBars(); }catch(e){}
+      }
     }
 
 
@@ -2573,12 +3080,14 @@ body{
         }
 
         range.addEventListener("input", (e)=>{
+  try{ requestAnimationFrame(function(){ try{ requestAnimationFrame(function(){ try{ if(window.__syncMacroUI) window.__syncMacroUI(); }catch(e){} }); }catch(e){} }); }catch(e){}
           const g = clampNum(e.target.value, minG, maxG);
           if(num) num.value = g;
           setG(g);
         });
 
         num.addEventListener("input", (e)=>{
+  try{ requestAnimationFrame(function(){ try{ requestAnimationFrame(function(){ try{ if(window.__syncMacroUI) window.__syncMacroUI(); }catch(e){} }); }catch(e){} }); }catch(e){}
           const g = clampNum(e.target.value, minG, maxG);
           if(range) range.value = g;
           setG(g);
@@ -3478,12 +3987,22 @@ requestAnimationFrame(renderLines);
   function getPrevNewGrams(){
     const RD = window.REPORT_DATA || {};
 
-    const bar = RD.bar || {};
-    const curr = [
-      num(bar.protein_g),
-      num(bar.carbs_g),
-      num(bar.fat_g),
-    ];
+    // Current grams should mirror the donut + sliders in real time.
+    let curr = [0,0,0];
+    if(typeof getMacroDataFromReport === "function"){
+      const items = getMacroDataFromReport() || [];
+      const p = items.find(x=>String(x.key||"").toLowerCase()==="protein");
+      const c = items.find(x=>String(x.key||"").toLowerCase()==="carbs");
+      const f = items.find(x=>String(x.key||"").toLowerCase()==="fat");
+      curr = [ num(p && p.grams), num(c && c.grams), num(f && f.grams) ];
+    } else {
+      const bar = RD.bar || {};
+      curr = [
+        num(bar.protein_g),
+        num(bar.carbs_g),
+        num(bar.fat_g),
+      ];
+    }
 
     const prevBar =
       RD.prev_bar ||
@@ -3511,9 +4030,9 @@ requestAnimationFrame(renderLines);
     ];
     // Match donut slice colors EXACTLY: use REPORT_DATA.macros[i].color
     const colors = [
-      String((m[0] && m[0].color) || "#00C2C7"),
-      String((m[1] && m[1].color) || "#FF8A00"),
-      String((m[2] && m[2].color) || "#D64B5A"),
+      String((m[0] && m[0].color) || "#7C3AED"),
+      String((m[1] && m[1].color) || "#3B82F6"),
+      String((m[2] && m[2].color) || "#A3E635"),
     ];
     return { labels, colors };
   }
@@ -3554,8 +4073,16 @@ requestAnimationFrame(renderLines);
         bar.style.setProperty("--w", pct.toFixed(1) + "%");
         bar.style.width = pct.toFixed(1) + "%";
 
-        // SAME color as donut slice; style difference is prev vs new
-        bar.style.background = color;
+        
+// Force macro colors to match the donut/pills (Protein/Carbs/Fat) regardless of incoming REPORT_DATA colors.
+const rootStyle = getComputedStyle(document.documentElement);
+const forcedColors = [
+  rootStyle.getPropertyValue("--m1").trim() || "#7C3AED", // Protein
+  rootStyle.getPropertyValue("--m2").trim() || "#3B82F6", // Carbs
+  rootStyle.getPropertyValue("--m3").trim() || "#A3E635", // Fat
+];
+const forced = forcedColors[i] || color;
+bar.style.background = forced;
         return bar;
       };
 
@@ -3608,6 +4135,8 @@ requestAnimationFrame(renderLines);
       host.appendChild(group);
     }
   }
+
+  window.renderDietaryMacroBars = renderDietaryMacroBars;
 
   document.addEventListener("DOMContentLoaded", function(){
     try{ renderDietaryMacroBars(); }catch(e){ console.warn("Dietary macro bars render failed:", e); }
@@ -3727,6 +4256,56 @@ requestAnimationFrame(renderLines);
 })();
 </script>
 
-<script>window.REPORT_DATA = window.REPORT_DATA || {"dailySteps": 3000, "tokens": {"REPORT_TITLE": "Progress Report", "REPORT_SUBTITLE": "A coach-generated results summary for the client, including macros, adherence, and trend lines.", "CLIENT_LABEL": "Ron Chanin", "REPORT_DATE": "12.18.25", "DAILY_STEPS": "3000", "HEADER_CHIP_1": "CUT", "HEADER_CHIP_2": "", "HEADER_CHIP_3": "XT", "MACROS_TITLE": "Macronutrient Breakdown", "PROTEIN_LABEL": "Protein", "PROTEIN_PCT": "38%", "CARB_LABEL": "Carbs", "CARB_PCT": "39%", "FAT_LABEL": "Fat", "FAT_PCT": "23%", "MACROS_FOOTNOTE": "Auto-calculated from daily macro targets.", "BARS_TITLE": "Composition Changes", "TABLE_TITLE": "Dietary Changes", "TABLE_COL_1": "Macro", "TABLE_COL_2": "Old", "TABLE_COL_3": "New", "ROW_1_LABEL": "Protein", "ROW_1_MID": "158 g", "ROW_1_VALUE": "170 g", "ROW_2_LABEL": "Carbs", "ROW_2_MID": "159 g", "ROW_2_VALUE": "172 g", "ROW_3_LABEL": "Fats", "ROW_3_MID": "42 g", "ROW_3_VALUE": "46 g", "LINE_TITLE": "Goal Timeline", "AXIS_TOP": "Weight (lb)", "AXIS_BOTTOM": "Start", "AXIS_RIGHT": "Goal"}, "macros": [{"key": "Protein", "value": 38, "color": "#4CAF50", "label": "Protein", "prev_g": 158.0, "new_g": 170.0}, {"key": "Carbs", "value": 39, "color": "#F4C430", "label": "Carbs", "prev_g": 159.0, "new_g": 172.0}, {"key": "Fat", "value": 23, "color": "#E57373", "label": "Fat", "prev_g": 42.0, "new_g": 46.0}], "bars": {"labels": ["Weight", "Bodyfat %", "TDEE", "Daily Calorie Goal", "Pull-Ups", "Push-Ups"], "prev": [158.0, 10.0, 2025, 1650, 5, 30], "curr": [170.0, 15.0, 2154, 1779, 5, 25]}, "goalTimeline": {"startWeight": 170.0, "goalWeight": 166.0, "estWeeksMin": 10, "estWeeksMax": 12, "rateLbPerWeek": 0.9, "variationPct": 0.2, "yTicks": [190, 187, 184, 181, 178, 172]}, "bar": {"protein_g": 170.0, "carbs_g": 172.0, "fat_g": 46.0}, "prev_bar": {"protein_g": 158.0, "carbs_g": 159.0, "fat_g": 42.0}, "recomp": {"fat_change_lb": 9.7, "lean_change_lb": 2.3, "strength_pct": -8.0, "inputs": {"weight_prev": 158.0, "weight_curr": 170.0, "bf_prev": 10.0, "bf_curr": 15.0, "pull_prev": 5.0, "pull_curr": 5.0, "push_prev": 30.0, "push_curr": 25.0}}};</script>
+
+<script>
+
+/* Keep donut + dietary bars in sync when sliders move */
+window.__syncMacroUI = function(){
+  try{
+    if (typeof window.renderMacroDonut === "function") window.renderMacroDonut();
+  }catch(e){}
+  try{
+    if (typeof window.renderDietaryMacroBars === "function") window.renderDietaryMacroBars();
+  }catch(e){}
+};
+
+</script>
+
+<script>
+/* Sync CURRENT dietary bars to donut slice aesthetics */
+(function(){
+  function setMacroBarColorsFromDonut(){
+    if (typeof getMacroDataFromReport !== "function") return;
+    const m = getMacroDataFromReport();
+    const colors = (m && m.colors) || {};
+    const host = document.getElementById("dietaryMacroBars");
+    if (!host) return;
+
+    const map = {
+      "Protein": colors.protein,
+      "Carbs": colors.carbs,
+      "Fat": colors.fat
+    };
+
+    host.querySelectorAll(".hGroup").forEach(group=>{
+      const label = group.querySelector(".hLabel")?.textContent?.trim();
+      const bar = group.querySelector(".bar-curr");
+      if (label && bar && map[label]){
+        bar.style.setProperty("--macro-color", map[label]);
+      }
+    });
+  }
+
+  // hook into existing sync
+  const _oldSync = window.__syncMacroUI;
+  window.__syncMacroUI = function(){
+    if (typeof _oldSync === "function") _oldSync();
+    try{ setMacroBarColorsFromDonut(); }catch(e){}
+  };
+
+  document.addEventListener("DOMContentLoaded", setMacroBarColorsFromDonut);
+})();
+</script>
+
 </body>
 </html>
