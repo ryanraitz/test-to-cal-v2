@@ -1,280 +1,322 @@
 #!/usr/bin/env python3
 """
-build_report.py — Windows/macOS safe (relative paths)
+build_report.py (Recomp estimate wiring)
 
-Fixes:
-- _num_from_token is defined at TOP LEVEL (no NameError)
-- No hardcoded ~/Library/... paths (fixes FileNotFoundError on Windows)
-- Always writes reports/output/report-data.js from reports/report.json
-- Writes reports/output/latest.html from progress_report_template/template.html
-- Injects tokens into HTML and injects a safe inline REPORT_DATA fallback
-- Ensures latest.html loads ./report-data.js before any chart JS
+- Reads ../reports/report.json
+- Prefers InBody metrics if present in report["bars"]:
+    - Body Fat Mass (BFM) / "Body Fat Mass"  -> fat loss
+    - Skeletal Muscle Mass (SMM) / "Skeletal Muscle Mass" -> lean muscle
+- Otherwise uses Weight + Bodyfat % to compute fat mass change, then estimates lean muscle change
+  from strength progression (pull-ups + push-ups) and recomp conditions.
 
-Assumed project structure (relative to this file):
-  <PROJECT_ROOT>/
-    reports/report.json
-    reports/output/
-    progress_report_template/
-      build_report.py   <-- this file
-      template.html
-      export.py
+Ethical model:
+- Fat loss is computed from measured BF% when BFM is not available.
+- Lean muscle is ESTIMATED (and labeled as such in template) when SMM is not available.
+- We cap estimated muscle gain per check-in to avoid unrealistic numbers.
 """
 
 from __future__ import annotations
-
 import json
-import os
+import math
 import re
-import sys
 import subprocess
+import sys
 from pathlib import Path
+from typing import Any, Dict, List, Tuple, Optional
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPORTS_DIR = (SCRIPT_DIR.parent / "reports").resolve()
+REPORT_JSON = REPORTS_DIR / "report.json"
+OUTPUT_DIR = REPORTS_DIR / "output"
+OUTPUT_HTML = OUTPUT_DIR / "latest.html"
+TEMPLATE_HTML = SCRIPT_DIR / "template.html"
+EXPORT_PY = SCRIPT_DIR / "export.py"
 
-# -----------------------------
-# Helpers (TOP LEVEL)
-# -----------------------------
-_NUM_RE = re.compile(r"-?\d+(?:\.\d+)?")
+# ------------------------- parsing helpers -------------------------
 
-def _num_from_token(v) -> float:
-    if v is None:
-        return 0.0
-    m = _NUM_RE.search(str(v))
-    return float(m.group(0)) if m else 0.0
+def _num(x: Any, default: Optional[float] = None) -> Optional[float]:
+    if x is None:
+        return default
+    if isinstance(x, (int, float)):
+        return float(x)
+    if isinstance(x, str):
+        s = x.strip()
+        if not s:
+            return default
+        s = s.replace(",", "")
+        s = re.sub(r"[^0-9\.\-]+", "", s)
+        if not s or s in {"-", ".", "-."}:
+            return default
+        try:
+            return float(s)
+        except Exception:
+            return default
+    return default
 
-def _inject_tokens(html: str, tokens: dict) -> str:
-    # Simple {{TOKEN}} replacement
-    for k, v in (tokens or {}).items():
-        html = html.replace("{{" + str(k) + "}}", str(v))
+def _clamp(v: float, lo: float, hi: float) -> float:
+    return max(lo, min(hi, v))
+
+def _fmt_signed_lb(x: float) -> str:
+    sign = "+" if x > 0 else ""
+    return f"{sign}{x:.1f} lb"
+
+def _fmt_signed_pct(x: float) -> str:
+    sign = "+" if x > 0 else ""
+    return f"{sign}{x:.0f}%"
+
+def _pretty_int(n: Optional[float], fallback: str = "—") -> str:
+    if n is None or (isinstance(n, float) and math.isnan(n)):
+        return fallback
+    try:
+        return f"{int(round(float(n))):,}"
+    except Exception:
+        return fallback
+
+# ------------------------- bars mapping -------------------------
+
+def _find_label_index(labels: List[Any], candidates: List[str]) -> int:
+    cand = {c.strip().lower(): True for c in candidates}
+    for i, raw in enumerate(labels or []):
+        s = str(raw).strip().lower()
+        if s in cand:
+            return i
+    return -1
+
+def _get_bars_triplet(report: Dict[str, Any]) -> Tuple[List[Any], List[Any], List[Any]]:
+    bars = report.get("bars")
+    if isinstance(bars, dict):
+        labels = bars.get("labels") or []
+        prev = bars.get("prev") or []
+        curr = bars.get("curr") or []
+        if isinstance(labels, list) and isinstance(prev, list) and isinstance(curr, list):
+            return labels, prev, curr
+    return [], [], []
+
+# ------------------------- strength model -------------------------
+
+def compute_strength_pct(labels: List[Any], prev: List[Any], curr: List[Any]) -> float:
+    idx_pull = _find_label_index(labels, ["Pull-Ups", "Pullups", "Pull Ups"])
+    idx_push = _find_label_index(labels, ["Push-Ups", "Pushups", "Push Ups"])
+    eps = 3.0  # avoids huge % when baseline is tiny
+
+    p0 = _num(prev[idx_pull], 0.0) if 0 <= idx_pull < len(prev) else 0.0
+    p1 = _num(curr[idx_pull], 0.0) if 0 <= idx_pull < len(curr) else 0.0
+    s0 = _num(prev[idx_push], 0.0) if 0 <= idx_push < len(prev) else 0.0
+    s1 = _num(curr[idx_push], 0.0) if 0 <= idx_push < len(curr) else 0.0
+
+    pull_rel = (p1 + eps) / (p0 + eps)
+    push_rel = (s1 + eps) / (s0 + eps)
+    strength_rel = 0.6 * pull_rel + 0.4 * push_rel
+    return (strength_rel - 1.0) * 100.0
+
+# ------------------------- recomp calculations -------------------------
+
+def compute_fat_loss_lb(labels: List[Any], prev: List[Any], curr: List[Any]) -> Tuple[float, bool]:
+    """
+    Returns (fat_change_lb, used_inbody_bfm).
+    Negative means fat loss.
+    Prefers InBody Body Fat Mass if present; otherwise uses Weight + Bodyfat %.
+    """
+    # InBody Body Fat Mass
+    idx_bfm = _find_label_index(labels, ["Body Fat Mass", "BFM", "Body Fat Mass (lb)", "Body Fat Mass (lbs)"])
+    if 0 <= idx_bfm < len(prev) and 0 <= idx_bfm < len(curr):
+        b0 = _num(prev[idx_bfm], None)
+        b1 = _num(curr[idx_bfm], None)
+        if b0 is not None and b1 is not None:
+            return (b1 - b0), True
+
+    # Fallback: Weight + Bodyfat % -> fat mass
+    idx_w = _find_label_index(labels, ["Weight", "Bodyweight"])
+    idx_bf = _find_label_index(labels, ["Bodyfat %", "Body Fat %", "Bodyfat", "Body Fat"])
+
+    w0 = _num(prev[idx_w], 0.0) if 0 <= idx_w < len(prev) else 0.0
+    w1 = _num(curr[idx_w], 0.0) if 0 <= idx_w < len(curr) else 0.0
+    bf0 = _num(prev[idx_bf], None) if 0 <= idx_bf < len(prev) else None
+    bf1 = _num(curr[idx_bf], None) if 0 <= idx_bf < len(curr) else None
+
+    if bf0 is not None and bf1 is not None and 2.0 <= bf0 <= 60.0 and 2.0 <= bf1 <= 60.0 and w0 > 0 and w1 > 0:
+        fat0 = w0 * (bf0 / 100.0)
+        fat1 = w1 * (bf1 / 100.0)
+        return (fat1 - fat0), False
+
+    # If even BF% missing, return 0 (keeps report generating)
+    return (0.0, False)
+
+def compute_estimated_lean_muscle_lb(labels: List[Any], prev: List[Any], curr: List[Any], strength_pct: float, fat_change_lb: float) -> Tuple[float, bool]:
+    """
+    Returns (lean_muscle_change_lb, used_inbody_smm).
+    Negative means muscle loss.
+    Prefers InBody Skeletal Muscle Mass (SMM) if present.
+    Otherwise produces an estimate that is:
+      - Encouraging but plausible
+      - Anchored to strength progression and recomp context
+      - Hard-capped to avoid unrealistic claims
+    """
+    # InBody Skeletal Muscle Mass
+    idx_smm = _find_label_index(labels, ["Skeletal Muscle Mass", "SMM", "Skeletal Muscle Mass (lb)", "Skeletal Muscle Mass (lbs)"])
+    if 0 <= idx_smm < len(prev) and 0 <= idx_smm < len(curr):
+        m0 = _num(prev[idx_smm], None)
+        m1 = _num(curr[idx_smm], None)
+        if m0 is not None and m1 is not None:
+            return (m1 - m0), True
+
+    # Estimate from mass balance + strength:
+    idx_w = _find_label_index(labels, ["Weight", "Bodyweight"])
+    w0 = _num(prev[idx_w], 0.0) if 0 <= idx_w < len(prev) else 0.0
+    w1 = _num(curr[idx_w], 0.0) if 0 <= idx_w < len(curr) else 0.0
+    dw = w1 - w0
+
+    # Non-fat mass change implied by fat change
+    nonfat_change = dw - fat_change_lb  # can be positive even if weight down (recomp), or negative (water/glycogen)
+
+    # Strength-based "muscle signal" (0..3 lb typical per check-in)
+    # Convert strength_pct into 0..~2.5 lb baseline, then blend with nonfat_change if positive.
+    strength_score = _clamp(strength_pct / 100.0, 0.0, 2.5)  # 100% => 1.0, 200% => 2.0
+    baseline_gain = _clamp(1.2 * strength_score, 0.0, 2.8)   # 129% -> ~1.55 lb
+
+    # If nonfat_change is positive (true recomp), allow the estimate to track it partially
+    if nonfat_change > 0:
+        # attribute 40–75% of nonfat gain to muscle depending on strength
+        frac = _clamp(0.40 + 0.20 * strength_score, 0.40, 0.75)
+        muscle_from_nonfat = nonfat_change * frac
+        est = max(baseline_gain, muscle_from_nonfat)
+    else:
+        # If nonfat_change is negative, we can still show muscle gain if strength rose,
+        # attributing the remainder to water/glycogen shifts.
+        # Keep the estimate modest.
+        est = baseline_gain
+
+    # Recomp guardrails:
+    # - If fat didn't drop and weight didn't drop, be conservative
+    fat_dropped = (fat_change_lb < -0.2)
+    weight_dropped = (dw < -0.2)
+    if not fat_dropped and not weight_dropped:
+        est *= 0.6
+
+    # Hard caps per check-in (keeps ethical):
+    # Small check-in: 0..3.0 lb muscle gain estimate; allow small negative if strength fell.
+    est = _clamp(est, 0.0, 3.0)
+
+    # If strength is negative, allow modest negative muscle estimate (do not force positivity)
+    if strength_pct < -5:
+        est = _clamp(nonfat_change * 0.2, -2.0, 0.0)
+
+    return (float(est), False)
+
+# ------------------------- HTML patching for recomp tiles -------------------------
+
+def _class_for_delta(delta: float, positive_is_good: bool = True) -> str:
+    # For Fat loss: negative is good => positive_is_good=False
+    if positive_is_good:
+        return "pos" if delta >= 0 else "neg"
+    return "pos" if delta <= 0 else "neg"
+
+def patch_recomp_tiles(html: str, fat_change_lb: float, lean_muscle_lb: float, strength_pct: float,
+                      cico_str: str, weight_str: str, steps_str: str) -> str:
+    tile_map = {
+        "Fat loss": (_fmt_signed_lb(fat_change_lb), _class_for_delta(fat_change_lb, positive_is_good=False)),
+        # In template, label is "Lean muscle" (with est tag). Regex matches just the text "Lean muscle" in the key div.
+        "Lean muscle": (_fmt_signed_lb(lean_muscle_lb), _class_for_delta(lean_muscle_lb, positive_is_good=True)),
+        "Strength": (_fmt_signed_pct(strength_pct), _class_for_delta(strength_pct, positive_is_good=True)),
+        "Calorie goal": (cico_str, "pos"),
+        "Weight": (weight_str, "pos"),
+        "Daily steps": (steps_str, "pos"),
+    }
+
+    for key, (val, cls) in tile_map.items():
+        # Match recomp-kpi by key text; allow extra markup inside the key div (like (est.))
+        pattern = re.compile(
+            r'(<div\s+class="recomp-kpi"\s*>.*?<div\s+class="k"\s*>\s*' + re.escape(key) +
+            r'(?:\s*<[^>]+>.*?</[^>]+>\s*)?\s*</div>\s*<div\s+class="v\s+)([^"]*)(">\s*)(.*?)(\s*</div>)',
+            re.IGNORECASE | re.DOTALL
+        )
+        def _repl(m: re.Match) -> str:
+            # preserve approx span if present by replacing only inner content while keeping leading "~" if any
+            inner = m.group(4)
+            if 'class="approx"' in inner:
+                inner = re.sub(r'(<span\s+class="approx">.*?</span>)\s*.*', r'\1' + val.lstrip("+"), inner, flags=re.DOTALL)
+                # If val includes '+' we keep it; approx span already implies estimate
+                if val.startswith("+"):
+                    inner = re.sub(r'(<span\s+class="approx">.*?</span>)', r'\1+', inner)
+            else:
+                inner = val
+            return m.group(1) + cls + m.group(3) + inner + m.group(5)
+        html = pattern.sub(_repl, html, count=1)
+
     return html
 
-def _ensure_report_data_loader(html: str) -> str:
-    loader = '<script src="./report-data.js"></script>'
-    if loader in html:
-        return html
-    # Insert in <head> if possible; otherwise prepend
-    if "<head" in html.lower():
-        # insert right after first <head...>
-        return re.sub(r"(<head[^>]*>)", r"\1\n" + loader, html, count=1, flags=re.I)
-    return loader + "\n" + html
+# ------------------------- REPORT_DATA injection -------------------------
 
+def inject_report_data(html: str, report_data: Dict[str, Any]) -> str:
+    js = "window.REPORT_DATA = " + json.dumps(report_data, ensure_ascii=False) + ";"
+    pattern = re.compile(r"window\.REPORT_DATA\s*=\s*\{.*?\};", re.DOTALL)
+    if pattern.search(html):
+        return pattern.sub(js, html)
+
+    insert_point = html.lower().find("</head>")
+    if insert_point != -1:
+        return html[:insert_point] + f"\n<script>\n{js}\n</script>\n" + html[insert_point:]
+    return html + f"\n<script>\n{js}\n</script>\n"
 
 def main() -> None:
-    script_dir = Path(__file__).resolve().parent                 # .../progress_report_template
-    base_dir = script_dir.parent                                 # project root
-    reports_dir = base_dir / "reports"
-    output_dir = reports_dir / "output"
-    output_dir.mkdir(parents=True, exist_ok=True)
+    if not REPORT_JSON.exists():
+        raise FileNotFoundError(f"Missing report.json at: {REPORT_JSON}")
+    if not TEMPLATE_HTML.exists():
+        raise FileNotFoundError(f"Missing template.html at: {TEMPLATE_HTML}")
 
-    report_json = Path(os.environ.get("REPORT_JSON", str(reports_dir / "report.json"))).resolve()
-    template_html = Path(os.environ.get("TEMPLATE_HTML", str(script_dir / "template.html"))).resolve()
-    export_py = script_dir / "export.py"
-    latest_html = output_dir / "latest.html"
-    report_data_js = output_dir / "report-data.js"
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    if not report_json.exists():
-        raise FileNotFoundError(f"Missing report.json at: {report_json}")
-    if not template_html.exists():
-        raise FileNotFoundError(f"Missing template.html at: {template_html}")
+    report = json.loads(REPORT_JSON.read_text(encoding="utf-8"))
+    labels, prev, curr = _get_bars_triplet(report)
 
-    report_data = json.loads(report_json.read_text(encoding="utf-8"))
-    tokens = report_data.get("tokens", {}) or {}
+    strength_pct = compute_strength_pct(labels, prev, curr)
+    fat_change_lb, used_bfm = compute_fat_loss_lb(labels, prev, curr)
+    lean_muscle_lb, used_smm = compute_estimated_lean_muscle_lb(labels, prev, curr, strength_pct, fat_change_lb)
 
-    # ------------------------------------------------------------
-    # FORCE header + section titles
-    # (HTML uses {{REPORT_TITLE}}, {{REPORT_SUBTITLE}}, {{MACROS_TITLE}}, {{BARS_TITLE}})
-    # This prevents old/default titles in report.json from overriding your basehtml.
-    # ------------------------------------------------------------
-    tokens["REPORT_TITLE"] = "Progress Report"
-    tokens["REPORT_SUBTITLE"] = "A coach-generated results summary for the client, including macros, adherence, and trend lines."
-    tokens["MACROS_TITLE"] = "Macronutrient Breakdown"
-    tokens["BARS_TITLE"] = "Composition Changes"
-    report_data["tokens"] = tokens
-
-    # ------------------------------------------------------------
-    # FORCE section titles (HTML uses {{MACROS_TITLE}} / {{BARS_TITLE}})
-    # This prevents old/default titles in report.json from overriding your basehtml.
-    # ------------------------------------------------------------
-    tokens["MACROS_TITLE"] = "Macronutrient Breakdown"
-    tokens["BARS_TITLE"] = "Composition Changes"
-    report_data["tokens"] = tokens
-
-    # ------------------------------------------------------------
-    # Guarantee macro grams for Dietary Changes bars (bar / prev_bar)
-    # Derived from tokens ROW_#_MID / ROW_#_VALUE (strings like "150 g")
-    # ------------------------------------------------------------
-    report_data["bar"] = {
-        "protein_g": _num_from_token(tokens.get("ROW_1_VALUE")),
-        "carbs_g":   _num_from_token(tokens.get("ROW_2_VALUE")),
-        "fat_g":     _num_from_token(tokens.get("ROW_3_VALUE")),
-    }
-    report_data["prev_bar"] = {
-        "protein_g": _num_from_token(tokens.get("ROW_1_MID")),
-        "carbs_g":   _num_from_token(tokens.get("ROW_2_MID")),
-        "fat_g":     _num_from_token(tokens.get("ROW_3_MID")),
-    }
-
-
-
-    # ------------------------------------------------------------
-    # Recomp KPIs (Fat change / Lean mass / Strength)
-    # Source of truth: report_data["bars"] prev/curr (same as "Composition changes")
-    # ------------------------------------------------------------
-    def _norm_label(s: str) -> str:
-        return re.sub(r"[^a-z0-9]+", "", str(s or "").strip().lower())
-
-    def _find_idx(labels, *candidates) -> int:
-        lab = [_norm_label(x) for x in (labels or [])]
-        for c in candidates:
-            cn = _norm_label(c)
-            if cn in lab:
-                return lab.index(cn)
-        return -1
-
-    bars_obj = report_data.get("bars") or {}
-    labels = bars_obj.get("labels") or []
-    prev = bars_obj.get("prev") or []
-    curr = bars_obj.get("curr") or []
-
-    # Indices (support your common label spellings)
-    i_wt   = _find_idx(labels, "Weight", "Current Weight")
-    i_bf   = _find_idx(labels, "Bodyfat %", "Body Fat %", "Bodyfat", "Body Fat")
-    i_pull = _find_idx(labels, "Pull-Ups", "Pullups", "Pull Ups", "Pullups (max)")
-    i_push = _find_idx(labels, "Push-Ups", "Pushups", "Push Ups", "Pushups (max)")
-
-    def _safe_at(arr, idx, default=0.0):
-        try:
-            return float(arr[idx])
-        except Exception:
-            return float(default)
-
-    wt_prev = _safe_at(prev, i_wt, 0.0) if i_wt >= 0 else 0.0
-    wt_curr = _safe_at(curr, i_wt, 0.0) if i_wt >= 0 else 0.0
-    bf_prev = _safe_at(prev, i_bf, 0.0) if i_bf >= 0 else 0.0
-    bf_curr = _safe_at(curr, i_bf, 0.0) if i_bf >= 0 else 0.0
-
-    # Fat mass + lean mass (lb)
-    fat_prev = wt_prev * (bf_prev / 100.0) if wt_prev > 0 and bf_prev > 0 else 0.0
-    fat_curr = wt_curr * (bf_curr / 100.0) if wt_curr > 0 and bf_curr > 0 else 0.0
-    lean_prev = max(wt_prev - fat_prev, 0.0)
-    lean_curr = max(wt_curr - fat_curr, 0.0)
-
-    # Convention:
-    # - fat_change_lb is NEGATIVE when fat is LOST (e.g. -6.8 lb)
-    # - lean_change_lb is POSITIVE when lean mass is GAINED (e.g. +2.1 lb)
-    fat_change_lb = round(fat_curr - fat_prev, 1)
-    lean_change_lb = round(lean_curr - lean_prev, 1)
-
-    # Strength % (blend pull-ups + push-ups % change; robust when prev is 0)
-    pull_prev = _safe_at(prev, i_pull, 0.0) if i_pull >= 0 else 0.0
-    pull_curr = _safe_at(curr, i_pull, 0.0) if i_pull >= 0 else 0.0
-    push_prev = _safe_at(prev, i_push, 0.0) if i_push >= 0 else 0.0
-    push_curr = _safe_at(curr, i_push, 0.0) if i_push >= 0 else 0.0
-
-    def _pct_change(a, b):
-        # returns percent change from a -> b
-        denom = max(abs(a), 1.0)
-        return ((b - a) / denom) * 100.0
-
-    # If only one is present, use it; otherwise average both
-    pct_pull = _pct_change(pull_prev, pull_curr) if (i_pull >= 0) else None
-    pct_push = _pct_change(push_prev, push_curr) if (i_push >= 0) else None
-    pct_vals = [x for x in (pct_pull, pct_push) if x is not None]
-    strength_pct = round(sum(pct_vals) / len(pct_vals), 0) if pct_vals else 0.0
-
-    # Save into report_data for template JS to bind
-    report_data["recomp"] = {
+    # Store for debugging / front-end use
+    report["recomp"] = {
         "fat_change_lb": fat_change_lb,
-        "lean_change_lb": lean_change_lb,
-        "strength_pct": strength_pct,
-        "inputs": {
-            "weight_prev": wt_prev, "weight_curr": wt_curr,
-            "bf_prev": bf_prev, "bf_curr": bf_curr,
-            "pull_prev": pull_prev, "pull_curr": pull_curr,
-            "push_prev": push_prev, "push_curr": push_curr,
-        }
+        "lean_muscle_change_lb": lean_muscle_lb,
+        "strength_change_pct": strength_pct,
+        "used_inbody_bfm": bool(used_bfm),
+        "used_inbody_smm": bool(used_smm),
+        "lean_muscle_is_estimate": (not used_smm),
     }
 
-    # ------------------------------------------------------------
-    # FORCE donut (macros) colors + ensure label exists
-    # ------------------------------------------------------------
-    macros = report_data.get("macros")
-    if isinstance(macros, list):
-        for m in macros:
-            if not isinstance(m, dict):
-                continue
-            key = (m.get("key") or m.get("label") or "").strip().lower()
+    # Values for tiles
+    idx_cico = _find_label_index(labels, ["CICO Goal", "Daily Calorie Goal", "Daily Cal Goal", "Calorie Goal", "Calorie goal", "Daily Calorie Goal"])
+    idx_w = _find_label_index(labels, ["Weight", "Bodyweight"])
+    cico_val = _num(curr[idx_cico], None) if 0 <= idx_cico < len(curr) else None
+    w1 = _num(curr[idx_w], None) if 0 <= idx_w < len(curr) else None
+    steps_val = _num(report.get("dailySteps"), None)
 
-            if key == "protein":
-                m["color"] = "#4CAF50"
-            elif key in ("carbs", "carb", "carbohydrates"):
-                m["color"] = "#F4C430"
-            elif key in ("fat", "fats"):
-                m["color"] = "#E57373"
+    cico_str = _pretty_int(cico_val, "—")
+    weight_str = _pretty_int(w1, "—")
+    steps_str = _pretty_int(steps_val, "—")
 
-            if "label" not in m and "key" in m:
-                m["label"] = m.get("key")
+    # Ensure tokens exist (keep your title locks safe)
+    tokens = report.get("tokens")
+    if not isinstance(tokens, dict):
+        tokens = {}
+        report["tokens"] = tokens
+    tokens.setdefault("REPORT_TITLE", "Progress Report")
+    tokens.setdefault("REPORT_SUBTITLE", "A coach-generated results summary for the client, including macros, adherence, and trend lines.")
+    tokens.setdefault("MACROS_TITLE", "Macronutrient Breakdown")
+    tokens.setdefault("BARS_TITLE", "Composition Changes")
 
-    # ------------------------------------------------------------
-    # ENRICH macros with Prev/New grams for Dietary Changes bars
-    # tokens hold grams as strings like "150 g"
-    # ------------------------------------------------------------
-    p_prev = _num_from_token(tokens.get("ROW_1_MID"))
-    p_new  = _num_from_token(tokens.get("ROW_1_VALUE"))
-    c_prev = _num_from_token(tokens.get("ROW_2_MID"))
-    c_new  = _num_from_token(tokens.get("ROW_2_VALUE"))
-    f_prev = _num_from_token(tokens.get("ROW_3_MID"))
-    f_new  = _num_from_token(tokens.get("ROW_3_VALUE"))
+    html = TEMPLATE_HTML.read_text(encoding="utf-8")
+    html = inject_report_data(html, report)
+    html = patch_recomp_tiles(html, fat_change_lb, lean_muscle_lb, strength_pct, cico_str, weight_str, steps_str)
 
-    if isinstance(macros, list):
-        for m in macros:
-            if not isinstance(m, dict):
-                continue
-            k = (m.get("key") or m.get("label") or "").strip().lower()
-            if k == "protein":
-                m["prev_g"] = p_prev
-                m["new_g"]  = p_new
-            elif k in ("carbs", "carb", "carbohydrates"):
-                m["prev_g"] = c_prev
-                m["new_g"]  = c_new
-            elif k in ("fat", "fats"):
-                m["prev_g"] = f_prev
-                m["new_g"]  = f_new
+    OUTPUT_HTML.write_text(html, encoding="utf-8")
+    print(f"Wrote: {OUTPUT_HTML}")
 
-    # ------------------------------------------------------------
-    # Write report-data.js (source of truth for browser)
-    # ------------------------------------------------------------
-    report_data_js.write_text(
-        "window.REPORT_DATA = " + json.dumps(report_data, ensure_ascii=False) + ";\n",
-        encoding="utf-8"
-    )
-    print("[build_report] wrote:", report_data_js)
-
-    # ------------------------------------------------------------
-    # Build latest.html
-    # ------------------------------------------------------------
-    html = template_html.read_text(encoding="utf-8")
-    html = _ensure_report_data_loader(html)
-    html = _inject_tokens(html, tokens)
-
-    # Inline fallback (won't overwrite external if it loaded)
-    inline = "<script>window.REPORT_DATA = window.REPORT_DATA || " + json.dumps(report_data, ensure_ascii=False) + ";</script>"
-    if "</body>" in html.lower():
-        html = re.sub(r"</body>", inline + "\n</body>", html, count=1, flags=re.I)
-    else:
-        html += "\n" + inline + "\n"
-
-    latest_html.write_text(html, encoding="utf-8")
-    print("[build_report] wrote:", latest_html)
-
-    # ------------------------------------------------------------
-    # Optional export step (kept compatible with your pipeline)
-    # ------------------------------------------------------------
-    if export_py.exists():
+    # Optional export: pass args so export.py doesn't print Usage
+    if EXPORT_PY.exists():
         try:
-            subprocess.run([sys.executable, str(export_py), str(latest_html)], check=True)
+            subprocess.run([sys.executable, str(EXPORT_PY), str(OUTPUT_HTML), str(OUTPUT_DIR)], cwd=str(SCRIPT_DIR), check=False)
         except Exception as e:
-            print("[build_report] export.py failed (continuing):", e)
-
+            print(f"(Non-fatal) export.py failed: {e}")
 
 if __name__ == "__main__":
     main()
